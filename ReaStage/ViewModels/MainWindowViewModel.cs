@@ -135,6 +135,7 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private void ShowPlaylistEditor()
     {
+        PlaylistEditor.Load();
         CurrentPage = PlaylistEditor;
         IsPaneOpen = false;
     }
