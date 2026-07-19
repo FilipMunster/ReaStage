@@ -56,6 +56,7 @@ public partial class App : Application
             })
             .AddSingleton(configuration)
             .AddSingleton<WindowFactory>()
+            .AddSingleton<ISettingsService, SettingsService>()
             .AddSingleton<IReaperClient, ReaperClient>()
             ;
     }

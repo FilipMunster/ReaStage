@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using Avalonia.Threading;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using ReaStage.Core;
@@ -36,13 +37,15 @@ public partial class MainWindowViewModel : ViewModelBase
         Task.Run(async () =>
         {
             List<ReaperRegion> regions = await GetRegions();
-            Regions = regions.Select(t => $"{t.Name} ({t.StartPosition} - {t.EndPosition})").Aggregate((a, b) => $"{a}\n{b}");
+            string regionsText = string.Join("\n", regions.Select(t => $"{t.Name} ({t.StartPosition} - {t.EndPosition})"));
+            Dispatcher.UIThread.Post(() => Regions = regionsText);
         });
     }
 
     private void Client_PositionChanged(object? sender, ReaperPositionChangedEventArgs e)
-    { 
-        ReaperPosition = e.Position.PositionString;
+    {
+        // OSC events arrive on a background thread
+        Dispatcher.UIThread.Post(() => ReaperPosition = e.Position.PositionString);
     }
 
     [RelayCommand]

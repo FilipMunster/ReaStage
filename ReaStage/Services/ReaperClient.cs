@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using ReaStage.Core;
-using ReaStage.Services;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -14,11 +13,10 @@ using LucHeart.CoreOSC;
 using System.Net;
 using System.Diagnostics;
 
+namespace ReaStage.Services;
+
 internal class ReaperClient : IReaperClient, IDisposable
 {
-    public const int ReaperPort = 9123; // TODO config
-    public const int ReaperOscPort = 9124; // TODO config
-
     private readonly string baseUrl;
     private readonly HttpClient httpClient;
     private readonly OscListener oscListener;
@@ -29,12 +27,14 @@ internal class ReaperClient : IReaperClient, IDisposable
 
     public event EventHandler<ReaperPositionChangedEventArgs>? PositionChanged;
 
-    public ReaperClient(ILogger<ReaperClient> logger)
+    public ReaperClient(ILogger<ReaperClient> logger, ISettingsService settingsService)
     {
         this.logger = logger;
-        baseUrl = $"http://localhost:{ReaperPort}/_/"; // TODO config
+
+        AppSettings.ReaperSettings reaperSettings = settingsService.Settings.Reaper;
+        baseUrl = $"http://{reaperSettings.Host}:{reaperSettings.HttpPort}/_/";
         httpClient = new HttpClient();
-        IPEndPoint endpoint = new IPEndPoint(IPAddress.Any, ReaperOscPort); // TODO config
+        IPEndPoint endpoint = new IPEndPoint(IPAddress.Any, reaperSettings.OscPort);
         oscListener = new OscListener(endpoint);
 
         _ = ListenOscAsync(cts.Token);
