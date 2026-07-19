@@ -1,0 +1,61 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:ReaStage.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="720"
+             x:Class="ReaStage.Views.PlaylistSelectionView"
+             x:DataType="vm:PlaylistSelectionViewModel"
+             Background="#0D0D0D">
+
+    <UserControl.Styles>
+        <Style Selector="Button.choice">
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="FontSize" Value="24"/>
+            <Setter Property="Padding" Value="16,12"/>
+            <Setter Property="Margin" Value="0,4"/>
+            <Setter Property="Background" Value="#1A1A1A"/>
+        </Style>
+        <Style Selector="Button.choice.active">
+            <Setter Property="BorderBrush" Value="#4CAF50"/>
+            <Setter Property="BorderThickness" Value="2"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid RowDefinitions="Auto,*,Auto" Margin="72,24">
+        <TextBlock Grid.Row="0" Text="Volba playlistu" FontSize="32" FontWeight="Bold" Foreground="#FFFFFF" Margin="0,0,0,16"/>
+
+        <ScrollViewer Grid.Row="1">
+            <ItemsControl ItemsSource="{Binding Choices}" MaxWidth="640" HorizontalAlignment="Left">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:PlaylistSelectionViewModel+PlaylistChoice">
+                        <Button Classes="choice"
+                                Classes.active="{Binding IsActive}"
+                                Content="{Binding Display}"
+                                Command="{Binding $parent[ItemsControl].((vm:PlaylistSelectionViewModel)DataContext).SelectCommand}"
+                                CommandParameter="{Binding}"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <StackPanel Grid.Row="2" Margin="0,16,0,0" Spacing="12">
+            <!-- Inline confirmation before switching -->
+            <Border Background="#1E1E1E" CornerRadius="8" Padding="16"
+                    IsVisible="{Binding PendingChoice, Converter={x:Static ObjectConverters.IsNotNull}}">
+                <StackPanel Orientation="Horizontal" Spacing="16" HorizontalAlignment="Center">
+                    <TextBlock VerticalAlignment="Center" FontSize="18" Foreground="#EEEEEE">
+                        <Run Text="Přepnout na playlist"/>
+                        <Run Text="{Binding PendingChoice.Name, FallbackValue=''}" FontWeight="Bold"/>
+                        <Run Text="?"/>
+                    </TextBlock>
+                    <Button Content="Přepnout" Command="{Binding ConfirmSwitchCommand}" FontSize="16" Padding="24,8"/>
+                    <Button Content="Zrušit" Command="{Binding CancelSwitchCommand}" FontSize="16" Padding="24,8"/>
+                </StackPanel>
+            </Border>
+
+            <Button Content="Zpět" Command="{Binding BackCommand}" FontSize="16" Padding="24,8"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

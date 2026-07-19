@@ -17,6 +17,8 @@ internal class SettingsService : ISettingsService
     private readonly ILogger<SettingsService> logger;
     private readonly string settingsPath;
 
+    public event EventHandler? SettingsSaved;
+
     public AppSettings Settings { get; }
 
     public SettingsService(ILogger<SettingsService> logger)
@@ -47,6 +49,8 @@ internal class SettingsService : ISettingsService
         {
             logger.LogError(ex, "Failed to save settings to {Path}", settingsPath);
         }
+
+        SettingsSaved?.Invoke(this, EventArgs.Empty);
     }
 
     private AppSettings Load()

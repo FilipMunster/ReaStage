@@ -11,6 +11,49 @@
         Background="#0D0D0D"
         Title="ReaStage">
 
-    <views:StageView DataContext="{Binding Stage}"/>
+    <Panel>
+        <SplitView IsPaneOpen="{Binding IsPaneOpen}"
+                   DisplayMode="Overlay"
+                   OpenPaneLength="280"
+                   PaneBackground="#161616">
+            <SplitView.Pane>
+                <StackPanel Margin="12,64,12,12" Spacing="8">
+                    <Button Content="Nastavení"
+                            Command="{Binding ShowSettingsCommand}"
+                            HorizontalAlignment="Stretch" FontSize="18" Padding="16,10"/>
+                    <Button Content="Editor playlistů"
+                            Command="{Binding ShowPlaylistEditorCommand}"
+                            HorizontalAlignment="Stretch" FontSize="18" Padding="16,10"/>
+                    <Button Content="Volba playlistu"
+                            Command="{Binding ShowPlaylistSelectionCommand}"
+                            HorizontalAlignment="Stretch" FontSize="18" Padding="16,10"/>
+                </StackPanel>
+            </SplitView.Pane>
 
+            <ContentControl Content="{Binding CurrentPage}">
+                <ContentControl.DataTemplates>
+                    <DataTemplate DataType="vm:StageViewModel">
+                        <views:StageView/>
+                    </DataTemplate>
+                    <DataTemplate DataType="vm:SettingsViewModel">
+                        <views:SettingsView/>
+                    </DataTemplate>
+                    <DataTemplate DataType="vm:PlaylistSelectionViewModel">
+                        <views:PlaylistSelectionView/>
+                    </DataTemplate>
+                    <DataTemplate DataType="vm:PlaylistEditorViewModel">
+                        <views:PlaylistEditorView/>
+                    </DataTemplate>
+                </ContentControl.DataTemplates>
+            </ContentControl>
+        </SplitView>
+
+        <!-- Hamburger stays on top of everything in the top-left corner -->
+        <Button Content="☰"
+                Command="{Binding TogglePaneCommand}"
+                FontSize="22" Padding="10,4"
+                Background="Transparent"
+                VerticalAlignment="Top" HorizontalAlignment="Left"
+                Margin="12"/>
+    </Panel>
 </Window>

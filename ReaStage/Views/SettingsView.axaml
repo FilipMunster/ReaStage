@@ -1,0 +1,77 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:ReaStage.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="720"
+             x:Class="ReaStage.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel"
+             Background="#0D0D0D">
+
+    <UserControl.Styles>
+        <Style Selector="TextBlock.section">
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#EEEEEE"/>
+            <Setter Property="Margin" Value="0,16,0,8"/>
+        </Style>
+        <Style Selector="TextBlock.label">
+            <Setter Property="Foreground" Value="#BBBBBB"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,0,12,0"/>
+        </Style>
+        <Style Selector="TextBox">
+            <Setter Property="Width" Value="200"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="Margin" Value="0,2"/>
+        </Style>
+    </UserControl.Styles>
+
+    <ScrollViewer>
+        <StackPanel Margin="72,24" MaxWidth="640" HorizontalAlignment="Left">
+            <TextBlock Text="Nastavení" FontSize="32" FontWeight="Bold" Foreground="#FFFFFF" Margin="0,0,0,8"/>
+
+            <TextBlock Classes="section" Text="Klávesy"/>
+            <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto">
+                <TextBlock Grid.Row="0" Classes="label" Text="Play / Pauza"/>
+                <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding PlayPauseKey}"/>
+                <TextBlock Grid.Row="1" Classes="label" Text="Předchozí píseň"/>
+                <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding PreviousKey}"/>
+                <TextBlock Grid.Row="2" Classes="label" Text="Další píseň"/>
+                <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding NextKey}"/>
+            </Grid>
+
+            <TextBlock Classes="section" Text="Zobrazení"/>
+            <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto">
+                <TextBlock Grid.Row="0" Classes="label" Text="Předchozích písní"/>
+                <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding PreviousSongsShown}"/>
+                <TextBlock Grid.Row="1" Classes="label" Text="Následujících písní"/>
+                <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding NextSongsShown}"/>
+                <TextBlock Grid.Row="2" Classes="label" Text="Práh šipky zpět (s)"/>
+                <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding PreviousThresholdSeconds}"/>
+            </Grid>
+
+            <TextBlock Classes="section" Text="REAPER"/>
+            <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto,Auto">
+                <TextBlock Grid.Row="0" Classes="label" Text="Host"/>
+                <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding ReaperHost}"/>
+                <TextBlock Grid.Row="1" Classes="label" Text="HTTP port"/>
+                <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding ReaperHttpPort}"/>
+                <TextBlock Grid.Row="2" Classes="label" Text="OSC port"/>
+                <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding ReaperOscPort}"/>
+                <TextBlock Grid.Row="3" Classes="label" Text="Aktualizace regionů (s)"/>
+                <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding RegionsPollSeconds}"/>
+            </Grid>
+            <TextBlock Text="Změna hostu a portů se projeví až po restartu aplikace."
+                       Foreground="#888888" FontStyle="Italic" Margin="0,8,0,0"/>
+
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="#FF5252" Margin="0,12,0,0"
+                       IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+
+            <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,24,0,24">
+                <Button Content="Uložit" Command="{Binding SaveCommand}" FontSize="16" Padding="24,8"/>
+                <Button Content="Zpět" Command="{Binding BackCommand}" FontSize="16" Padding="24,8"/>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

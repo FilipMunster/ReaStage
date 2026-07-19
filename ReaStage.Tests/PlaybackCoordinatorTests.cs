@@ -114,10 +114,13 @@ public class PlaybackCoordinatorTests
 
     private sealed class FakeSettingsService : ISettingsService
     {
+        public event EventHandler? SettingsSaved;
+
         public AppSettings Settings { get; } = new();
 
         public void Save()
         {
+            SettingsSaved?.Invoke(this, EventArgs.Empty);
         }
     }
 

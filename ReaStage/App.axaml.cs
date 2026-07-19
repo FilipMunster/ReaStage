@@ -62,6 +62,9 @@ public partial class App : Application
             .AddSingleton<IPlaylistService, PlaylistService>()
             .AddSingleton<IPlaybackCoordinator, PlaybackCoordinator>()
             .AddSingleton<StageViewModel>()
+            .AddSingleton<SettingsViewModel>()
+            .AddSingleton<PlaylistSelectionViewModel>()
+            .AddSingleton<PlaylistEditorViewModel>()
             ;
     }
 }
