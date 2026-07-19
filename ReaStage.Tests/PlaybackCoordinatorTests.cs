@@ -64,7 +64,20 @@ public class PlaybackCoordinatorTests
     {
         public event EventHandler? RegionsChanged;
 
+        // The coordinator does not consume reachability
+        public event EventHandler? ReachabilityChanged
+        {
+            add
+            {
+            }
+            remove
+            {
+            }
+        }
+
         public IReadOnlyList<ReaperRegion> Regions { get; private set; } = [];
+
+        public bool IsReaperReachable => true;
 
         public Task RefreshAsync() => Task.CompletedTask;
 

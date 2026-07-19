@@ -61,6 +61,7 @@ public partial class App : Application
             .AddSingleton<IRegionCatalog, RegionCatalog>()
             .AddSingleton<IPlaylistService, PlaylistService>()
             .AddSingleton<IPlaybackCoordinator, PlaybackCoordinator>()
+            .AddSingleton<StageViewModel>()
             ;
     }
 }

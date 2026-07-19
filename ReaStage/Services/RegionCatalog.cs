@@ -17,7 +17,11 @@ internal class RegionCatalog : IRegionCatalog, IDisposable
 
     public event EventHandler? RegionsChanged;
 
+    public event EventHandler? ReachabilityChanged;
+
     public IReadOnlyList<ReaperRegion> Regions { get; private set; } = [];
+
+    public bool IsReaperReachable { get; private set; }
 
     public RegionCatalog(
         IReaperClient client,
@@ -36,6 +40,7 @@ internal class RegionCatalog : IRegionCatalog, IDisposable
         try
         {
             List<ReaperRegion> regions = await client.GetRegions();
+            SetReachable(true);
             if (!regions.SequenceEqual(Regions))
             {
                 Regions = regions;
@@ -47,6 +52,16 @@ internal class RegionCatalog : IRegionCatalog, IDisposable
         {
             // Keep the last known regions when REAPER is unreachable
             logger.LogError(ex, "Failed to refresh regions from REAPER");
+            SetReachable(false);
+        }
+    }
+
+    private void SetReachable(bool reachable)
+    {
+        if (IsReaperReachable != reachable)
+        {
+            IsReaperReachable = reachable;
+            ReachabilityChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 

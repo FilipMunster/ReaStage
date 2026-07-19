@@ -115,7 +115,8 @@ monitoru. Hlavní okno = stage view, vlevo nahoře hamburger ikona otevírajíc�
   Počet dle nastavení.
 - Stav „mezi písničkami": aktuální rámeček ukazuje připravenou (další) píseň
   bez progressu, vizuálně odlišený stav (např. slabší rámeček).
-- Chybějící píseň (region ID nenalezen): zřetelné označení (přeškrtnutí/ikona).
+- Chybějící písně (region ID nenalezen) se ve stage view nezobrazují — koordinátor
+  je z přehrávání vyřazuje. Zřetelné označení mají v editoru playlistů.
 
 ### 3.2 Postranní panel (hamburger)
 
