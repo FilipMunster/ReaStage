@@ -8,10 +8,6 @@
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
         Title="ReaStage">
-    <Window.KeyBindings>
-        <KeyBinding Gesture="Space" Command="{Binding PlayPauseCommand}"/>
-    </Window.KeyBindings>
-
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
              to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
@@ -19,6 +15,7 @@
     </Design.DataContext>
 
     <StackPanel Orientation="Vertical">
+        <TextBlock Text="{Binding CurrentSong}" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
         <TextBlock Text="{Binding ReaperPosition}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
         <TextBlock Text="{Binding Regions}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
     </StackPanel>

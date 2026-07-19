@@ -60,6 +60,7 @@ public partial class App : Application
             .AddSingleton<IReaperClient, ReaperClient>()
             .AddSingleton<IRegionCatalog, RegionCatalog>()
             .AddSingleton<IPlaylistService, PlaylistService>()
+            .AddSingleton<IPlaybackCoordinator, PlaybackCoordinator>()
             ;
     }
 }

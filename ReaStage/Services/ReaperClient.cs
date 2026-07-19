@@ -40,13 +40,16 @@ internal class ReaperClient : IReaperClient, IDisposable
         _ = ListenOscAsync(cts.Token);
     }
 
-    public async Task SendPlayPause() => await SendCommand("40044"); // ID pro Transport: Play/pause
+    public async Task SendPlayPause() => await SendCommand("40073"); // ID pro Transport: Play/pause
 
     public async Task SendStop() => await SendCommand("1016"); // ID pro Transport: Stop
 
     public async Task SendPlay() => await SendCommand("1007"); // ID pro Transport: Play
 
     public async Task SetPosition(double seconds) => await SendCommand($"SET/POS/{seconds.ToString(CultureInfo.InvariantCulture)}");
+
+    // Chained in a single HTTP request so stop and seek happen atomically in REAPER
+    public async Task StopAndSetPosition(double seconds) => await SendCommand($"1016;SET/POS/{seconds.ToString(CultureInfo.InvariantCulture)}");
 
     public async Task<List<ReaperRegion>> GetRegions()
     {
