@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="ReaStage.Tests/ReaStage.Tests.csproj" />
   <Project Path="ReaStage/ReaStage.csproj" />
 </Solution>

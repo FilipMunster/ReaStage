@@ -16,6 +16,7 @@ namespace ReaStage.ViewModels;
 public partial class MainWindowViewModel : ViewModelBase
 {
     private readonly IReaperClient client;
+    private readonly IRegionCatalog regionCatalog;
     private readonly ILogger<MainWindowViewModel> logger;
 
     [ObservableProperty]
@@ -26,26 +27,33 @@ public partial class MainWindowViewModel : ViewModelBase
 
     public MainWindowViewModel(
         IReaperClient client,
+        IRegionCatalog regionCatalog,
         ILogger<MainWindowViewModel> logger)
     {
         this.client = client;
+        this.regionCatalog = regionCatalog;
         this.logger = logger;
         logger.LogDebug("MainWindowViewModel created");
 
         client.PositionChanged += Client_PositionChanged;
-
-        Task.Run(async () =>
-        {
-            List<ReaperRegion> regions = await GetRegions();
-            string regionsText = string.Join("\n", regions.Select(t => $"{t.Name} ({t.StartPosition} - {t.EndPosition})"));
-            Dispatcher.UIThread.Post(() => Regions = regionsText);
-        });
+        regionCatalog.RegionsChanged += RegionCatalog_RegionsChanged;
+        UpdateRegionsText();
     }
 
     private void Client_PositionChanged(object? sender, ReaperPositionChangedEventArgs e)
     {
         // OSC events arrive on a background thread
         Dispatcher.UIThread.Post(() => ReaperPosition = e.Position.PositionString);
+    }
+
+    private void RegionCatalog_RegionsChanged(object? sender, EventArgs e)
+    {
+        Dispatcher.UIThread.Post(UpdateRegionsText);
+    }
+
+    private void UpdateRegionsText()
+    {
+        Regions = string.Join("\n", regionCatalog.Regions.Select(t => $"{t.Name} ({t.StartPosition} - {t.EndPosition})"));
     }
 
     [RelayCommand]
@@ -88,21 +96,6 @@ public partial class MainWindowViewModel : ViewModelBase
         }
     }
 
-
-    private async Task<List<ReaperRegion>> GetRegions()
-    {
-        try
-        {
-            List<ReaperRegion> regions = await client.GetRegions();
-            logger.LogInformation("Retrieved {Count} regions from Reaper", regions.Count);
-            return regions;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Failed to retrieve regions from Reaper");
-            return [];
-        }
-    }
 
     private async Task GetPosition()
     {

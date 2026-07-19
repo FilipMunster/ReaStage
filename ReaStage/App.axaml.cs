@@ -58,6 +58,8 @@ public partial class App : Application
             .AddSingleton<WindowFactory>()
             .AddSingleton<ISettingsService, SettingsService>()
             .AddSingleton<IReaperClient, ReaperClient>()
+            .AddSingleton<IRegionCatalog, RegionCatalog>()
+            .AddSingleton<IPlaylistService, PlaylistService>()
             ;
     }
 }
