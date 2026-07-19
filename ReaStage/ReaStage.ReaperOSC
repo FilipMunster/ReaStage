@@ -1,0 +1,41 @@
+# ReaStage.ReaperOSC - Configuration for ReaStage application
+#
+# SETUP INSTRUCTIONS:
+# 1. Place this file in REAPER's OSC patterns directory:
+#    - Windows: %AppData%\REAPER\OSC
+#    - Linux: ~/.config/REAPER/OSC
+#
+# 2. In REAPER Preferences (Control/OSC/web):
+#    - Device name: ReaStage
+#    - Pattern config: ReaStage
+#    - Mode: Device IP/port [send only]
+#    - Device port: Enter the port number configured in your ReaStage settings (e.g., 9124)
+#    - Device IP: 127.0.0.1 (Use your WSL IP address if running ReaStage inside WSL)
+#
+# 3. Ensure the port in REAPER matches the "OSC Receive Port" in ReaStage configuration.
+
+# Global device settings
+DEVICE_TRACK_COUNT 0
+DEVICE_MARKER_COUNT 0
+DEVICE_REGION_COUNT 0
+
+# Sync selection with REAPER
+REAPER_TRACK_FOLLOWS REAPER
+
+# Time and Position Reporting
+# TIME token returns float seconds and string time representation
+TIME f/time s/time/str
+# BEAT token returns string beat representation (measures.beats.hundredths)
+BEAT s/beat/str
+
+# Transport Reporting
+# REAPER sends binary (1/0) for each state individually
+STOP b/transport/stop
+PLAY b/transport/play
+PAUSE b/transport/pause
+RECORD b/transport/record
+REPEAT b/transport/repeat
+
+# Information about the last marker/region
+LAST_MARKER_NAME s/lastmarker/name
+LAST_MARKER_NUMBER s/lastmarker/number/str
