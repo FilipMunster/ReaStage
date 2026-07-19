@@ -46,6 +46,8 @@ internal class ReaperClient : IReaperClient, IDisposable
 
     public async Task SendPlay() => await SendCommand("1007"); // ID pro Transport: Play
 
+    public async Task SetPosition(double seconds) => await SendCommand($"SET/POS/{seconds.ToString(CultureInfo.InvariantCulture)}");
+
     public async Task<List<ReaperRegion>> GetRegions()
     {
         var response = await httpClient.GetStringAsync($"{baseUrl}REGION");

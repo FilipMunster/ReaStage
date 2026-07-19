@@ -10,6 +10,7 @@ public interface IReaperClient
     event EventHandler<ReaperPositionChangedEventArgs>? PositionChanged;
 
     Task<ReaperPosition> GetPosition();
+    Task SetPosition(double seconds);
     Task<List<ReaperRegion>> GetRegions();
     Task SendPlay();
     Task SendPlayPause();
