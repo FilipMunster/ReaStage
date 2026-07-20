@@ -89,6 +89,7 @@ Odebírá `IReaperClient.PositionChanged` a drží aplikační stav:
   "nextSongsShown": 3,
   "previousThresholdSeconds": 3.0,
   "regionsPollSeconds": 10,
+  "fontScalePercent": 100,
   "reaper": { "host": "localhost", "httpPort": 9123, "oscPort": 9124 }
 }
 ```
@@ -143,6 +144,8 @@ Tři tlačítka:
 
 ## 4. Fáze implementace
 
+> Fáze 1–6 jsou implementované (viz git historie). Navazuje etapa 2, kapitola 5.
+
 ### Fáze 1 — Základy a úklid
 - `ISettingsService` + JSON persistence v `%AppData%/ReaStage/`.
 - Porty a host v `ReaperClient` z nastavení (odstranit `TODO config`).
@@ -177,7 +180,59 @@ Tři tlačítka:
 - Nový/duplikovat/přejmenovat, drag & drop, soft delete + obnova, autosave.
 - Blokace transportních kláves při otevřeném editoru.
 
-## 5. Rizika a poznámky
+## 5. Etapa 2 — ovládání myší, statistiky, UX nastavení
+
+### 5.1 Rozhodnutí (odsouhlaseno)
+
+| Téma | Rozhodnutí |
+|---|---|
+| Hover tlačítka | Rewind/forward volají tutéž logiku koordinátoru jako klávesy ← / → (rewind včetně prahu `previousThresholdSeconds`). Jedna sdílená cesta, žádné odlišné chování myši vs. klávesnice. |
+| Klik na jinou píseň | Dvoukrokově: první klik píseň „odjistí" (zvýraznění), druhý klik potvrdí skok (Stop + SetPosition na začátek písně). Pojistka proti překliku na pódiu. |
+| Údaje v kartě aktuální písně | Časy od začátku / do konce **nahrazují** dosavadní pozici ve formátu REAPERu (beats) — v kartě zůstane jen název + nové časy. |
+| Zbývající čas playlistu | Čistý hudební čas: zbytek aktuální písně + součet délek následujících písní playlistu. Čekání mezi písněmi se nepredikuje — odhad času konce se při stání posouvá. |
+
+### 5.2 Fáze 7 — Ovládání myší ve stage view
+
+- **Hover overlay nad aktuální písní:** při najetí myší na kartu aktuální písně
+  se zobrazí tři poloprůhledná tlačítka (⏮ rewind, ⏯ play/pauza, ⏭ forward)
+  překrývající kartu; zmizí po opuštění kurzorem. Volají `GoToPreviousAsync` /
+  `TogglePlayPauseAsync` / `GoToNextAsync` na koordinátoru — identické chování
+  jako klávesy.
+- **Klik na jinou viditelnou píseň** (předchozí i následující): první klik kartu
+  odjistí — zvýrazní se (akcentový rámeček) a čeká na potvrzení; druhý klik do
+  ~4 s provede Stop + SetPosition na začátek té písně. Klik jinam, Escape nebo
+  timeout odjištění zruší. Odjištění je čistě UI stav ve `StageViewModel`.
+- Nový příkaz koordinátoru: `JumpToItemAtAsync(int index)` (zobecnění stávající
+  interní `JumpToItemAsync`) pro skok na konkrétní položku playlistu.
+
+### 5.3 Fáze 8 — Statistiky
+
+- **V kartě aktuální písně:** vlevo dole čas od začátku písně
+  (`pozice − start`), vpravo dole zbývající čas s prefixem minus
+  (`−(end − pozice)`). Nahrazuje dosavadní centrovaný údaj pozice.
+- **Spodní stavová lišta stage view:**
+  - pořadí: `N / M` (číslo aktuální písně / počet písní playlistu);
+    ve stavu mezi písničkami `– / M`,
+  - zbývající hudební čas do konce playlistu,
+  - odhad času konce playlistu (hodiny, formát `HH:mm`) = teď + zbývající čas.
+- Formát časů: `m:ss`, nad hodinu `h:mm:ss`.
+- Odhad času konce se přepočítává na 1s časovači (posouvá se i při zastaveném
+  transportu), ostatní hodnoty při změně pozice/playlistu.
+- Výpočty jako čisté funkce ve `StageViewModel` (nebo pomocná třída) + testy.
+
+### 5.4 Fáze 9 — UX nastavení
+
+- **Zachytávání kláves stiskem:** místo textového pole tlačítko zobrazující
+  aktuální klávesu; klik přepne do režimu „Stiskni klávesu…", následující
+  KeyDown se uloží jako `KeyGesture` (včetně případných modifikátorů),
+  Escape zachytávání zruší. Duplicitní přiřazení téže klávesy dvěma akcím
+  validace odmítne.
+- **Velikost písma v procentech:** `fontScalePercent` (50–200, výchozí 100),
+  slider s číselnou hodnotou v nastavení. Multiplikátor se aplikuje na velikosti
+  písma **pouze ve stage view** (názvy písní, časy, stavová lišta) — ostatní
+  obrazovky beze změny. Projeví se okamžitě po uložení (bez restartu).
+
+## 6. Rizika a poznámky
 
 - **Ticho mezi písněmi je předpoklad, ne garance.** Detekce konce písně stojí na
   tom, že projekt REAPERu má mezi regiony vždy chvíli ticha. Pokud by regiony
