@@ -8,26 +8,56 @@
         x:Class="ReaStage.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Background="#0D0D0D"
         Title="ReaStage">
+
+    <Window.Background>
+        <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+            <GradientStop Offset="0" Color="#12131C"/>
+            <GradientStop Offset="0.55" Color="#0C0D13"/>
+            <GradientStop Offset="1" Color="#141020"/>
+        </LinearGradientBrush>
+    </Window.Background>
+
+    <Window.Styles>
+        <Style Selector="Button.menu">
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Padding" Value="14,10"/>
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        <Style Selector="Button.menu:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource SurfaceHoverBrush}"/>
+        </Style>
+        <Style Selector="Button.hamburger">
+            <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource SurfaceBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="Padding" Value="12,6"/>
+        </Style>
+    </Window.Styles>
 
     <Panel>
         <SplitView IsPaneOpen="{Binding IsPaneOpen}"
                    DisplayMode="Overlay"
-                   OpenPaneLength="280"
-                   PaneBackground="#161616">
+                   OpenPaneLength="300"
+                   PaneBackground="Transparent">
             <SplitView.Pane>
-                <StackPanel Margin="12,64,12,12" Spacing="8">
-                    <Button Content="Nastavení"
-                            Command="{Binding ShowSettingsCommand}"
-                            HorizontalAlignment="Stretch" FontSize="18" Padding="16,10"/>
-                    <Button Content="Editor playlistů"
-                            Command="{Binding ShowPlaylistEditorCommand}"
-                            HorizontalAlignment="Stretch" FontSize="18" Padding="16,10"/>
-                    <Button Content="Volba playlistu"
-                            Command="{Binding ShowPlaylistSelectionCommand}"
-                            HorizontalAlignment="Stretch" FontSize="18" Padding="16,10"/>
-                </StackPanel>
+                <!-- Floating menu card -->
+                <Border Margin="10"
+                        CornerRadius="18"
+                        Background="{StaticResource PanelBrush}"
+                        BorderBrush="{StaticResource SurfaceBorderBrush}"
+                        BorderThickness="1"
+                        BoxShadow="0 14 36 0 #A6000000"
+                        Padding="12">
+                    <StackPanel Margin="0,52,0,0" Spacing="4">
+                        <Button Classes="menu" Content="Nastavení" Command="{Binding ShowSettingsCommand}"/>
+                        <Button Classes="menu" Content="Editor playlistů" Command="{Binding ShowPlaylistEditorCommand}"/>
+                        <Button Classes="menu" Content="Volba playlistu" Command="{Binding ShowPlaylistSelectionCommand}"/>
+                    </StackPanel>
+                </Border>
             </SplitView.Pane>
 
             <ContentControl Content="{Binding CurrentPage}">
@@ -49,11 +79,10 @@
         </SplitView>
 
         <!-- Hamburger stays on top of everything in the top-left corner -->
-        <Button Content="☰"
+        <Button Classes="hamburger"
+                Content="☰"
                 Command="{Binding TogglePaneCommand}"
-                FontSize="22" Padding="10,4"
-                Background="Transparent"
                 VerticalAlignment="Top" HorizontalAlignment="Left"
-                Margin="12"/>
+                Margin="16"/>
     </Panel>
 </Window>

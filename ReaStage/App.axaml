@@ -4,10 +4,30 @@
              xmlns:local="using:ReaStage"
              RequestedThemeVariant="Dark">
 
+    <Application.Resources>
+        <!-- Shared design palette -->
+        <SolidColorBrush x:Key="SurfaceBrush" Color="#0DFFFFFF"/>
+        <SolidColorBrush x:Key="SurfaceHoverBrush" Color="#1FFFFFFF"/>
+        <SolidColorBrush x:Key="SurfaceBorderBrush" Color="#17FFFFFF"/>
+        <SolidColorBrush x:Key="PanelBrush" Color="#F0151721"/>
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="#F5F5F7"/>
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="#9AA1AD"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="#4ADE80"/>
+        <SolidColorBrush x:Key="AccentDimBrush" Color="#804ADE80"/>
+        <SolidColorBrush x:Key="DangerBrush" Color="#FF6B6B"/>
+    </Application.Resources>
+
     <Application.DataTemplates>
     </Application.DataTemplates>
-  
+
     <Application.Styles>
         <FluentTheme />
+
+        <Style Selector="Button">
+            <Setter Property="CornerRadius" Value="10"/>
+        </Style>
+        <Style Selector="TextBox">
+            <Setter Property="CornerRadius" Value="10"/>
+        </Style>
     </Application.Styles>
 </Application>
