@@ -123,49 +123,114 @@ public class PlaylistEditorViewModelTests : IDisposable
     }
 
     [Fact]
-    public void MoveSong_Down_InsertsAtTargetPosition()
+    public void PreviewMoveToIndex_ReordersVisualOnlyWithoutPersisting()
     {
         PlaylistEditorViewModel viewModel = CreateLoadedViewModel();
         viewModel.CreatePlaylistCommand.Execute(null);
+        Guid id = viewModel.Columns[1].Id!.Value;
 
-        viewModel.MoveSong(Song(viewModel, 1, 0), Song(viewModel, 1, 2));
+        viewModel.PreviewMoveToIndex(Song(viewModel, 1, 0), 2);
+
+        Assert.Equal(["Two", "Three", "One"], viewModel.Columns[1].Songs.Select(s => s.Name));
+        Assert.Equal([1, 2, 3], playlistService.GetPlaylist(id)!.Items.Select(i => i.RegionId));
+    }
+
+    [Fact]
+    public void PreviewMoveToIndex_IsIdempotent()
+    {
+        PlaylistEditorViewModel viewModel = CreateLoadedViewModel();
+        viewModel.CreatePlaylistCommand.Execute(null);
+        PlaylistEditorViewModel.SongItemViewModel dragged = Song(viewModel, 1, 0);
+
+        // Repeating the same target index (as a stationary cursor would) must not oscillate
+        viewModel.PreviewMoveToIndex(dragged, 1);
+        viewModel.PreviewMoveToIndex(dragged, 1);
+        viewModel.PreviewMoveToIndex(dragged, 1);
 
         Assert.Equal(["Two", "One", "Three"], viewModel.Columns[1].Songs.Select(s => s.Name));
     }
 
     [Fact]
-    public void MoveSong_Up_InsertsAtTargetPosition()
+    public void PreviewMoveToIndex_ClampsOutOfRange()
     {
         PlaylistEditorViewModel viewModel = CreateLoadedViewModel();
         viewModel.CreatePlaylistCommand.Execute(null);
 
-        viewModel.MoveSong(Song(viewModel, 1, 2), Song(viewModel, 1, 0));
-
-        Assert.Equal(["Three", "One", "Two"], viewModel.Columns[1].Songs.Select(s => s.Name));
-    }
-
-    [Fact]
-    public void MoveSongToEnd_AppendsToPlaylist()
-    {
-        PlaylistEditorViewModel viewModel = CreateLoadedViewModel();
-        viewModel.CreatePlaylistCommand.Execute(null);
-
-        viewModel.MoveSongToEnd(Song(viewModel, 1, 0), viewModel.Columns[1]);
+        viewModel.PreviewMoveToIndex(Song(viewModel, 1, 0), 99);
 
         Assert.Equal(["Two", "Three", "One"], viewModel.Columns[1].Songs.Select(s => s.Name));
     }
 
     [Fact]
-    public void MoveSong_AcrossPlaylists_IsIgnored()
+    public void CommitDrag_Down_PersistsPreviewedOrder()
+    {
+        PlaylistEditorViewModel viewModel = CreateLoadedViewModel();
+        viewModel.CreatePlaylistCommand.Execute(null);
+        Guid id = viewModel.Columns[1].Id!.Value;
+        PlaylistEditorViewModel.SongItemViewModel dragged = Song(viewModel, 1, 0);
+
+        viewModel.PreviewMoveToIndex(dragged, 2);
+        viewModel.CommitDrag(dragged);
+
+        Assert.Equal([2, 3, 1], playlistService.GetPlaylist(id)!.Items.Select(i => i.RegionId));
+        Assert.Equal(["Two", "Three", "One"], viewModel.Columns[1].Songs.Select(s => s.Name));
+    }
+
+    [Fact]
+    public void CommitDrag_Up_PersistsPreviewedOrder()
+    {
+        PlaylistEditorViewModel viewModel = CreateLoadedViewModel();
+        viewModel.CreatePlaylistCommand.Execute(null);
+        Guid id = viewModel.Columns[1].Id!.Value;
+        PlaylistEditorViewModel.SongItemViewModel dragged = Song(viewModel, 1, 2);
+
+        viewModel.PreviewMoveToIndex(dragged, 0);
+        viewModel.CommitDrag(dragged);
+
+        Assert.Equal([3, 1, 2], playlistService.GetPlaylist(id)!.Items.Select(i => i.RegionId));
+        Assert.Equal(["Three", "One", "Two"], viewModel.Columns[1].Songs.Select(s => s.Name));
+    }
+
+    [Fact]
+    public void CancelDrag_RestoresPersistedOrder()
+    {
+        PlaylistEditorViewModel viewModel = CreateLoadedViewModel();
+        viewModel.CreatePlaylistCommand.Execute(null);
+
+        viewModel.PreviewMoveToIndex(Song(viewModel, 1, 0), 2);
+        viewModel.CancelDrag();
+
+        Assert.Equal(["One", "Two", "Three"], viewModel.Columns[1].Songs.Select(s => s.Name));
+    }
+
+    [Fact]
+    public void PreviewMoveToIndex_OnlyAffectsSourceColumn()
     {
         PlaylistEditorViewModel viewModel = CreateLoadedViewModel();
         viewModel.CreatePlaylistCommand.Execute(null);
         viewModel.CreatePlaylistCommand.Execute(null);
 
-        viewModel.MoveSong(Song(viewModel, 1, 0), Song(viewModel, 2, 2));
+        viewModel.PreviewMoveToIndex(Song(viewModel, 1, 0), 2);
 
-        Assert.Equal(["One", "Two", "Three"], viewModel.Columns[1].Songs.Select(s => s.Name));
+        Assert.Equal(["Two", "Three", "One"], viewModel.Columns[1].Songs.Select(s => s.Name));
         Assert.Equal(["One", "Two", "Three"], viewModel.Columns[2].Songs.Select(s => s.Name));
+    }
+
+    [Fact]
+    public void CommitDrag_WithDeletedItem_KeepsRawIndexMapping()
+    {
+        PlaylistEditorViewModel viewModel = CreateLoadedViewModel();
+        viewModel.CreatePlaylistCommand.Execute(null);
+        Guid id = viewModel.Columns[1].Id!.Value;
+        viewModel.DeleteSongCommand.Execute(Song(viewModel, 1, 1)); // deletes "Two" (region 2)
+
+        // Visual songs are now [One, Three]; drag "One" after "Three"
+        PlaylistEditorViewModel.SongItemViewModel dragged = Song(viewModel, 1, 0);
+        viewModel.PreviewMoveToIndex(dragged, 1);
+        viewModel.CommitDrag(dragged);
+
+        Assert.Equal(["Three", "One"], viewModel.Columns[1].Songs.Select(s => s.Name));
+        Assert.Equal(["Two"], viewModel.Columns[1].DeletedSongs.Select(s => s.Name));
     }
 
     [Fact]

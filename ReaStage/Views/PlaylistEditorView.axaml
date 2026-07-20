@@ -35,6 +35,11 @@
             <Setter Property="Background" Value="#08FFFFFF"/>
             <Setter Property="Opacity" Value="0.55"/>
         </Style>
+        <Style Selector="Border.songItem.dragging">
+            <Setter Property="Opacity" Value="0.35"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AccentDimBrush}"/>
+            <Setter Property="Background" Value="#144ADE80"/>
+        </Style>
         <Style Selector="TextBlock.songName">
             <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
             <Setter Property="FontSize" Value="16"/>
@@ -57,6 +62,7 @@
         </Style>
     </UserControl.Styles>
 
+    <Panel>
     <Grid RowDefinitions="Auto,*" Margin="24,16">
         <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="12" Margin="56,0,0,20">
             <TextBlock Text="Editor playlistů" FontSize="28" FontWeight="Bold" Foreground="#FFFFFF" VerticalAlignment="Center"/>
@@ -77,7 +83,7 @@
                         <Border Classes="column" DragDrop.AllowDrop="True">
                             <Grid RowDefinitions="Auto,*">
                                 <!-- Column header -->
-                                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,10">
+                                <Grid x:Name="ColumnHeader" Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,10">
                                     <TextBlock Grid.Column="0" Text="REAPER" FontSize="18" FontWeight="Bold"
                                                Foreground="{StaticResource AccentBrush}" VerticalAlignment="Center"
                                                IsVisible="{Binding IsReadOnly}"/>
@@ -95,7 +101,7 @@
                                         <ItemsControl ItemsSource="{Binding Songs}">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate x:DataType="vm:PlaylistEditorViewModel+SongItemViewModel">
-                                                    <Border Classes="songItem" PointerPressed="Song_PointerPressed">
+                                                    <Border Classes="songItem" Classes.dragging="{Binding IsDragging}" PointerPressed="Song_PointerPressed">
                                                         <Grid ColumnDefinitions="*,Auto">
                                                             <StackPanel Grid.Column="0">
                                                                 <TextBlock Classes="songName" Classes.missing="{Binding IsMissing}" Text="{Binding Name}"/>
@@ -112,7 +118,7 @@
                                         </ItemsControl>
 
                                         <!-- Deleted songs, visually separated at the end -->
-                                        <StackPanel IsVisible="{Binding HasDeletedSongs}" Margin="0,12,0,0">
+                                        <StackPanel x:Name="DeletedSection" IsVisible="{Binding HasDeletedSongs}" Margin="0,12,0,0">
                                             <Separator Background="#26FFFFFF" Height="1" Margin="0,0,0,6"/>
                                             <TextBlock Text="Smazané" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="2,0,0,4"/>
                                             <ItemsControl ItemsSource="{Binding DeletedSongs}">
@@ -142,4 +148,19 @@
             </ItemsControl>
         </ScrollViewer>
     </Grid>
+
+    <!-- Floating ghost card following the cursor while dragging -->
+    <Canvas x:Name="GhostLayer" IsHitTestVisible="False">
+        <Border x:Name="DragGhost"
+                IsVisible="False"
+                CornerRadius="10"
+                Background="#F0222838"
+                BorderBrush="{StaticResource AccentDimBrush}"
+                BorderThickness="1"
+                BoxShadow="0 10 24 0 #B3000000"
+                Padding="14,8">
+            <TextBlock x:Name="DragGhostText" Foreground="{StaticResource TextPrimaryBrush}" FontSize="15"/>
+        </Border>
+    </Canvas>
+    </Panel>
 </UserControl>

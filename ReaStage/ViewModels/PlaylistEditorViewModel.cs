@@ -5,6 +5,7 @@ using ReaStage.Core;
 using ReaStage.Services;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -12,8 +13,12 @@ namespace ReaStage.ViewModels;
 
 public partial class PlaylistEditorViewModel : ViewModelBase
 {
-    public class SongItemViewModel
+    public partial class SongItemViewModel : ViewModelBase
     {
+        // Visual state of the card while it is being dragged
+        [ObservableProperty]
+        private bool isDragging;
+
         // null = the read-only REAPER column
         public Guid? PlaylistId { get; init; }
 
@@ -38,14 +43,17 @@ public partial class PlaylistEditorViewModel : ViewModelBase
 
         public Guid? Id { get; }
         public bool IsReadOnly => Id is null;
-        public IReadOnlyList<SongItemViewModel> Songs { get; }
+
+        // ObservableCollection so drag & drop can preview reordering live
+        public ObservableCollection<SongItemViewModel> Songs { get; }
+
         public IReadOnlyList<SongItemViewModel> DeletedSongs { get; }
         public bool HasDeletedSongs => DeletedSongs.Count > 0;
 
         public PlaylistColumnViewModel(
             Guid? id,
             string name,
-            IReadOnlyList<SongItemViewModel> songs,
+            ObservableCollection<SongItemViewModel> songs,
             IReadOnlyList<SongItemViewModel> deletedSongs,
             Action<Guid, string>? renameCallback)
         {
@@ -100,38 +108,88 @@ public partial class PlaylistEditorViewModel : ViewModelBase
         _ = regionCatalog.RefreshAsync();
     }
 
-    // Drop on a song: the dragged song is inserted at the target's position
-    public void MoveSong(SongItemViewModel source, SongItemViewModel target)
+    // Live preview while dragging: moves the dragged song to targetIndex in the visual
+    // collection only, the service is untouched. targetIndex is computed by the view from
+    // the cursor position against the other cards' midpoints, which keeps it oscillation-free.
+    public void PreviewMoveToIndex(SongItemViewModel source, int targetIndex)
     {
-        if (source.PlaylistId is not Guid playlistId
-            || target.PlaylistId != source.PlaylistId
-            || target.IsDeleted
-            || source.ItemIndex == target.ItemIndex)
+        if (source.PlaylistId is not Guid playlistId)
         {
             return;
         }
 
-        int toIndex = source.ItemIndex < target.ItemIndex ? target.ItemIndex - 1 : target.ItemIndex;
-        playlistService.MoveItem(playlistId, source.ItemIndex, toIndex);
+        PlaylistColumnViewModel? column = FindColumn(playlistId);
+        if (column is null)
+        {
+            return;
+        }
+
+        int sourceIndex = column.Songs.IndexOf(source);
+        if (sourceIndex < 0)
+        {
+            return;
+        }
+
+        int clamped = Math.Clamp(targetIndex, 0, column.Songs.Count - 1);
+        if (clamped != sourceIndex)
+        {
+            column.Songs.Move(sourceIndex, clamped);
+        }
+    }
+
+    // Drop: persist the previewed visual order with a single MoveItem
+    public void CommitDrag(SongItemViewModel source)
+    {
+        if (source.PlaylistId is not Guid playlistId)
+        {
+            return;
+        }
+
+        PlaylistColumnViewModel? column = FindColumn(playlistId);
+        int visualIndex = column?.Songs.IndexOf(source) ?? -1;
+        if (column is null || visualIndex < 0)
+        {
+            Rebuild();
+            return;
+        }
+
+        // Raw indexes are still valid — the service was not modified during the drag.
+        // MoveItem semantics: RemoveAt(from) followed by Insert(to).
+        int fromIndex = source.ItemIndex;
+        int toIndex;
+        if (visualIndex > 0)
+        {
+            int predecessor = column.Songs[visualIndex - 1].ItemIndex;
+            toIndex = fromIndex < predecessor ? predecessor : predecessor + 1;
+        }
+        else if (column.Songs.Count > 1)
+        {
+            int successor = column.Songs[1].ItemIndex;
+            toIndex = fromIndex < successor ? successor - 1 : successor;
+        }
+        else
+        {
+            Rebuild();
+            return;
+        }
+
+        if (toIndex != fromIndex)
+        {
+            playlistService.MoveItem(playlistId, fromIndex, toIndex);
+        }
+
         Rebuild();
     }
 
-    // Drop on the column's empty area: move to the end of the playlist
-    public void MoveSongToEnd(SongItemViewModel source, PlaylistColumnViewModel column)
+    // Cancelled drag: throw away the visual preview and restore the persisted order
+    public void CancelDrag()
     {
-        if (source.PlaylistId is not Guid playlistId || column.Id != playlistId)
-        {
-            return;
-        }
-
-        Playlist? playlist = playlistService.GetPlaylist(playlistId);
-        if (playlist is null || source.ItemIndex == playlist.Items.Count - 1)
-        {
-            return;
-        }
-
-        playlistService.MoveItem(playlistId, source.ItemIndex, playlist.Items.Count - 1);
         Rebuild();
+    }
+
+    private PlaylistColumnViewModel? FindColumn(Guid playlistId)
+    {
+        return Columns.FirstOrDefault(c => c.Id == playlistId);
     }
 
     [RelayCommand]
@@ -204,14 +262,13 @@ public partial class PlaylistEditorViewModel : ViewModelBase
 
     private static PlaylistColumnViewModel BuildReaperColumn(IReadOnlyList<ReaperRegion> regions)
     {
-        List<SongItemViewModel> songs = regions
+        ObservableCollection<SongItemViewModel> songs = new ObservableCollection<SongItemViewModel>(regions
             .OrderBy(r => r.StartPosition)
             .Select(r => new SongItemViewModel
             {
                 Name = r.Name,
                 LengthText = FormatLength(r)
-            })
-            .ToList();
+            }));
 
         return new PlaylistColumnViewModel(null, "REAPER", songs, [], null);
     }
@@ -220,7 +277,7 @@ public partial class PlaylistEditorViewModel : ViewModelBase
     {
         List<ResolvedPlaylistItem> resolved = PlaylistResolver.Resolve(playlist, regions);
 
-        List<SongItemViewModel> songs = [];
+        ObservableCollection<SongItemViewModel> songs = [];
         List<SongItemViewModel> deletedSongs = [];
         for (int i = 0; i < resolved.Count; i++)
         {
