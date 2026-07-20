@@ -16,6 +16,7 @@ public interface IPlaylistService
     Playlist? GetPlaylist(Guid id);
     Playlist CreatePlaylist(string name, IEnumerable<int> regionIds);
     Playlist DuplicatePlaylist(Guid id);
+    void DeletePlaylist(Guid id);
     void RenamePlaylist(Guid id, string name);
     void MoveItem(Guid playlistId, int fromIndex, int toIndex);
     void SetItemDeleted(Guid playlistId, int itemIndex, bool deleted);

@@ -60,6 +60,9 @@
             <Setter Property="Padding" Value="8,4"/>
             <Setter Property="CornerRadius" Value="8"/>
         </Style>
+        <Style Selector="Button.danger">
+            <Setter Property="Foreground" Value="{StaticResource DangerBrush}"/>
+        </Style>
     </UserControl.Styles>
 
     <Panel>
@@ -89,10 +92,15 @@
                                                IsVisible="{Binding IsReadOnly}"/>
                                     <TextBox Grid.Column="0" Text="{Binding Name, UpdateSourceTrigger=LostFocus}"
                                              FontSize="16" IsVisible="{Binding !IsReadOnly}"/>
-                                    <Button Grid.Column="1" Classes="small" Content="Duplikovat" Margin="8,0,0,0"
-                                            IsVisible="{Binding !IsReadOnly}"
-                                            Command="{Binding #Root.((vm:PlaylistEditorViewModel)DataContext).DuplicatePlaylistCommand}"
-                                            CommandParameter="{Binding}"/>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" Margin="8,0,0,0"
+                                                IsVisible="{Binding !IsReadOnly}">
+                                        <Button Classes="small" Content="Duplikovat"
+                                                Command="{Binding #Root.((vm:PlaylistEditorViewModel)DataContext).DuplicatePlaylistCommand}"
+                                                CommandParameter="{Binding}"/>
+                                        <Button Classes="small danger" Content="Smazat"
+                                                Command="{Binding #Root.((vm:PlaylistEditorViewModel)DataContext).RequestDeletePlaylistCommand}"
+                                                CommandParameter="{Binding}"/>
+                                    </StackPanel>
                                 </Grid>
 
                                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
@@ -148,6 +156,26 @@
             </ItemsControl>
         </ScrollViewer>
     </Grid>
+
+    <!-- Delete confirmation bar -->
+    <Border VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,28"
+            CornerRadius="16"
+            Background="{StaticResource PanelBrush}"
+            BorderBrush="{StaticResource SurfaceBorderBrush}"
+            BorderThickness="1"
+            BoxShadow="0 12 32 0 #8C000000"
+            Padding="20,14"
+            IsVisible="{Binding PendingDeleteColumn, Converter={x:Static ObjectConverters.IsNotNull}}">
+        <StackPanel Orientation="Horizontal" Spacing="16" HorizontalAlignment="Center">
+            <TextBlock VerticalAlignment="Center" FontSize="18" Foreground="{StaticResource TextPrimaryBrush}">
+                <Run Text="Smazat playlist"/>
+                <Run Text="{Binding PendingDeleteColumn.Name, FallbackValue=''}" FontWeight="Bold"/>
+                <Run Text="? Tuto akci nelze vzít zpět."/>
+            </TextBlock>
+            <Button Classes="danger" Content="Smazat" Command="{Binding ConfirmDeletePlaylistCommand}" FontSize="16" Padding="24,8"/>
+            <Button Content="Zrušit" Command="{Binding CancelDeletePlaylistCommand}" FontSize="16" Padding="24,8"/>
+        </StackPanel>
+    </Border>
 
     <!-- Floating ghost card following the cursor while dragging -->
     <Canvas x:Name="GhostLayer" IsHitTestVisible="False">

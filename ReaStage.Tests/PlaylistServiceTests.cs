@@ -131,6 +131,54 @@ public class PlaylistServiceTests : IDisposable
     }
 
     [Fact]
+    public void DeletePlaylist_RemovesAndPersists()
+    {
+        PlaylistService service = CreateService();
+        Playlist a = service.CreatePlaylist("A", [1]);
+        Playlist b = service.CreatePlaylist("B", [2]);
+
+        service.DeletePlaylist(a.Id);
+
+        PlaylistService reloaded = CreateService();
+        Assert.Null(reloaded.GetPlaylist(a.Id));
+        Assert.NotNull(reloaded.GetPlaylist(b.Id));
+    }
+
+    [Fact]
+    public void DeletePlaylist_ActiveOne_ResetsActiveToReaper()
+    {
+        PlaylistService service = CreateService();
+        Playlist a = service.CreatePlaylist("A", [1]);
+        service.ActivePlaylistId = a.Id;
+
+        service.DeletePlaylist(a.Id);
+
+        PlaylistService reloaded = CreateService();
+        Assert.Null(reloaded.ActivePlaylistId);
+    }
+
+    [Fact]
+    public void DeletePlaylist_KeepsOtherActive()
+    {
+        PlaylistService service = CreateService();
+        Playlist a = service.CreatePlaylist("A", [1]);
+        Playlist b = service.CreatePlaylist("B", [2]);
+        service.ActivePlaylistId = b.Id;
+
+        service.DeletePlaylist(a.Id);
+
+        Assert.Equal(b.Id, service.ActivePlaylistId);
+    }
+
+    [Fact]
+    public void DeletePlaylist_UnknownId_Throws()
+    {
+        PlaylistService service = CreateService();
+
+        Assert.Throws<ArgumentException>(() => service.DeletePlaylist(Guid.NewGuid()));
+    }
+
+    [Fact]
     public void RenamePlaylist_Persists()
     {
         PlaylistService service = CreateService();

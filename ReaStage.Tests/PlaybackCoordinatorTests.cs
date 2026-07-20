@@ -102,6 +102,7 @@ public class PlaybackCoordinatorTests
 
         public Playlist CreatePlaylist(string name, IEnumerable<int> regionIds) => throw new NotSupportedException();
         public Playlist DuplicatePlaylist(Guid id) => throw new NotSupportedException();
+        public void DeletePlaylist(Guid id) => throw new NotSupportedException();
         public void RenamePlaylist(Guid id, string name) => throw new NotSupportedException();
         public void MoveItem(Guid playlistId, int fromIndex, int toIndex) => throw new NotSupportedException();
         public void SetItemDeleted(Guid playlistId, int itemIndex, bool deleted) => throw new NotSupportedException();

@@ -260,6 +260,48 @@ public class PlaylistEditorViewModelTests : IDisposable
     }
 
     [Fact]
+    public void RequestDeletePlaylist_SetsPendingWithoutDeleting()
+    {
+        PlaylistEditorViewModel viewModel = CreateLoadedViewModel();
+        viewModel.CreatePlaylistCommand.Execute(null);
+        Guid id = viewModel.Columns[1].Id!.Value;
+
+        viewModel.RequestDeletePlaylistCommand.Execute(viewModel.Columns[1]);
+
+        Assert.NotNull(viewModel.PendingDeleteColumn);
+        Assert.NotNull(playlistService.GetPlaylist(id));
+    }
+
+    [Fact]
+    public void ConfirmDeletePlaylist_RemovesColumn()
+    {
+        PlaylistEditorViewModel viewModel = CreateLoadedViewModel();
+        viewModel.CreatePlaylistCommand.Execute(null);
+        Guid id = viewModel.Columns[1].Id!.Value;
+
+        viewModel.RequestDeletePlaylistCommand.Execute(viewModel.Columns[1]);
+        viewModel.ConfirmDeletePlaylistCommand.Execute(null);
+
+        Assert.Null(viewModel.PendingDeleteColumn);
+        Assert.Null(playlistService.GetPlaylist(id));
+        Assert.Single(viewModel.Columns); // only the REAPER column remains
+    }
+
+    [Fact]
+    public void CancelDeletePlaylist_KeepsPlaylist()
+    {
+        PlaylistEditorViewModel viewModel = CreateLoadedViewModel();
+        viewModel.CreatePlaylistCommand.Execute(null);
+        Guid id = viewModel.Columns[1].Id!.Value;
+
+        viewModel.RequestDeletePlaylistCommand.Execute(viewModel.Columns[1]);
+        viewModel.CancelDeletePlaylistCommand.Execute(null);
+
+        Assert.Null(viewModel.PendingDeleteColumn);
+        Assert.NotNull(playlistService.GetPlaylist(id));
+    }
+
+    [Fact]
     public void DuplicatePlaylist_AddsColumn()
     {
         PlaylistEditorViewModel viewModel = CreateLoadedViewModel();

@@ -85,6 +85,20 @@ internal class PlaylistService : IPlaylistService
         return copy;
     }
 
+    public void DeletePlaylist(Guid id)
+    {
+        Playlist playlist = RequirePlaylist(id);
+        database.Playlists.Remove(playlist);
+
+        // Fall back to the virtual REAPER playlist when the active one is removed
+        if (database.ActivePlaylistId == id)
+        {
+            database.ActivePlaylistId = null;
+        }
+
+        OnChanged();
+    }
+
     public void RenamePlaylist(Guid id, string name)
     {
         RequirePlaylist(id).Name = name;

@@ -82,6 +82,10 @@ public partial class PlaylistEditorViewModel : ViewModelBase
     [ObservableProperty]
     private IReadOnlyList<PlaylistColumnViewModel> columns = [];
 
+    // Non-null while a delete confirmation is pending for that playlist
+    [ObservableProperty]
+    private PlaylistColumnViewModel? pendingDeleteColumn;
+
     public PlaylistEditorViewModel(IPlaylistService playlistService, IRegionCatalog regionCatalog)
         : this(playlistService, regionCatalog, action => Dispatcher.UIThread.Post(action))
     {
@@ -222,6 +226,32 @@ public partial class PlaylistEditorViewModel : ViewModelBase
             playlistService.DuplicatePlaylist(id);
             Rebuild();
         }
+    }
+
+    [RelayCommand]
+    private void RequestDeletePlaylist(PlaylistColumnViewModel column)
+    {
+        if (column.Id is not null)
+        {
+            PendingDeleteColumn = column;
+        }
+    }
+
+    [RelayCommand]
+    private void ConfirmDeletePlaylist()
+    {
+        if (PendingDeleteColumn?.Id is Guid id)
+        {
+            playlistService.DeletePlaylist(id);
+            PendingDeleteColumn = null;
+            Rebuild();
+        }
+    }
+
+    [RelayCommand]
+    private void CancelDeletePlaylist()
+    {
+        PendingDeleteColumn = null;
     }
 
     [RelayCommand]
