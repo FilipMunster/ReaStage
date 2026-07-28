@@ -72,8 +72,8 @@ internal class ReaperClient : IReaperClient, IDisposable
                 regions.Add(new ReaperRegion(
                     Id: int.Parse(tokens[2]),
                     Name: Unescape(tokens[1]),
-                    StartPosition: double.Parse(tokens[3], CultureInfo.InvariantCulture),
-                    EndPosition: double.Parse(tokens[4], CultureInfo.InvariantCulture),
+                    StartPosition: Math.Round(double.Parse(tokens[3], CultureInfo.InvariantCulture), Constants.TIME_ROUND_PRECISION),
+                    EndPosition: Math.Round(double.Parse(tokens[4], CultureInfo.InvariantCulture), Constants.TIME_ROUND_PRECISION),
                     Color: color
                 ));
             }
@@ -156,6 +156,7 @@ internal class ReaperClient : IReaperClient, IDisposable
 
         if (currentPosition != lastPosition)
         {
+            this.lastPosition = currentPosition;
             PositionChanged?.Invoke(this, new ReaperPositionChangedEventArgs(currentPosition));
         }
     }

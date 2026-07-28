@@ -213,6 +213,8 @@ internal class PlaybackCoordinator : IPlaybackCoordinator, IDisposable
 
     private int FindItemIndex(double seconds)
     {
+        seconds = Math.Round(seconds, Constants.TIME_ROUND_PRECISION);
+
         IReadOnlyList<ResolvedPlaylistItem> items = ActiveItems;
         for (int i = 0; i < items.Count; i++)
         {
