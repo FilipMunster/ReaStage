@@ -27,20 +27,22 @@
     background-attachment: fixed;
     user-select: none; -webkit-user-select: none;
   }
+  /* Must stay on one line even on a narrow phone */
   #status {
     position: fixed; top: 0; left: 0; right: 0; z-index: 5;
-    display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
-    padding: 9px 14px;
+    display: flex; justify-content: space-between; align-items: baseline; gap: 8px;
+    padding: 7px 12px;
+    white-space: nowrap;
     background: #151721F0;
     border-bottom: 1px solid var(--border);
     backdrop-filter: blur(8px);
   }
-  #status .group { display: flex; align-items: baseline; gap: 7px; }
-  #status .value { font-size: 23px; font-weight: 600; color: var(--text); }
-  #status .caption { font-size: 12px; color: var(--text-dim); }
+  #status .group { display: flex; align-items: baseline; gap: 5px; }
+  #status .value { font-size: 15px; font-weight: 600; color: var(--text); }
+  #status .caption { font-size: 11px; color: var(--text-dim); }
   #list {
     height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch;
-    padding: 62px 14px 40vh 14px;
+    padding: 48px 14px 40vh 14px;
   }
   .song {
     border: 1px solid var(--border);
@@ -175,12 +177,12 @@
       box.classList.toggle("playing", isCurrent && s.isPlaying);
       var fill = box.querySelector(".fill");
       fill.style.width = isCurrent ? (s.progress * 100) + "%" : "0";
-      if (isCurrent) {
-        box.querySelector(".clock.left").textContent = s.elapsed;
-        box.querySelector(".beats.left").textContent = s.elapsedBeats;
-        box.querySelector(".clock.right").textContent = s.remaining;
-        box.querySelector(".beats.right").textContent = s.remainingBeats;
-      }
+      // Times belong to the current song only — a song that stops being current
+      // would otherwise keep the values it had
+      box.querySelector(".clock.left").textContent = isCurrent ? s.elapsed : "";
+      box.querySelector(".beats.left").textContent = isCurrent ? s.elapsedBeats : "";
+      box.querySelector(".clock.right").textContent = isCurrent ? s.remaining : "";
+      box.querySelector(".beats.right").textContent = isCurrent ? s.remainingBeats : "";
     }
     applyArmed();
 
