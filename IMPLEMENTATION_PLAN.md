@@ -191,7 +191,7 @@ Tři tlačítka:
 | Klik na jinou píseň | Dvoukrokově: první klik píseň „odjistí" (zvýraznění), druhý klik potvrdí skok (Stop + SetPosition na začátek písně). Pojistka proti překliku na pódiu. |
 | Časy v kartě aktuální písně | Čas od začátku i zbývající do konce, každý **současně ve dvou formátech**: `mm:ss` i `bar:beat`. Nahrazují dosavadní jediný údaj pozice ve formátu REAPERu. |
 | BPM | Ve statistikách se zobrazuje aktuální tempo (BPM). |
-| Zdroj tempa | REAPER dnes tempo neposílá (OSC ani HTTP). Rozšíří se OSC pattern (`TEMPO f/tempo/raw`) i HTTP cesta a přidá se pole do `ReaperPosition`. Vyžaduje re-import OSC configu v REAPERu. |
+| Zdroj tempa | Ověřeno: web API REAPERu tempo nevystavuje vůbec a OSC `/tempo/raw` chodí **jen při změně tempa** — aplikace připojená k už načtenému projektu se BPM nikdy nedozví. Proto se tempo za přehrávání **měří** z rychlosti postupu beatů (`/beat/str` + `/time`, okno 1,5 s, krok 0,5 BPM); `/tempo/raw` má přednost, když ho REAPER pošle. |
 | Zbývající čas playlistu | Čistý hudební čas: zbytek aktuální písně + součet délek následujících písní playlistu. Čekání mezi písněmi se nepredikuje — odhad času konce se při stání posouvá. |
 | Webové ovládání | HTTP server v ReaStage (**ASP.NET Core minimal API / Kestrel**), port v nastavení, bez autentizace, jen StageView, optimalizováno pro mobil. Stránka aktualizuje stav **pollingem** (à la REAPER `reaper_www_root`). |
 

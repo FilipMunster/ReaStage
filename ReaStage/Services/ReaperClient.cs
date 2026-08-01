@@ -17,6 +17,16 @@ namespace ReaStage.Services;
 
 internal class ReaperClient : IReaperClient, IDisposable
 {
+    // /beat/str carries only hundredths of a beat, so tempo is measured over a window
+    // long enough to make that quantisation negligible
+    private const double TempoWindowSeconds = 1.5;
+
+    // A longer gap means OSC packets were missed or the cursor was moved
+    private const double TempoWindowMaxSeconds = 5.0;
+
+    private const double TempoMinBpm = 20;
+    private const double TempoMaxBpm = 400;
+
     private readonly string baseUrl;
     private readonly HttpClient httpClient;
     private readonly OscListener oscListener;
@@ -24,6 +34,11 @@ internal class ReaperClient : IReaperClient, IDisposable
     private readonly ILogger<ReaperClient> logger;
     private ReaperPosition? lastPosition;
     private bool disposedValue;
+
+    // Tempo measurement state (see WithDerivedTempo)
+    private bool tempoReportedByReaper;
+    private double tempoAnchorSeconds = double.NaN;
+    private double tempoAnchorBeats;
 
     public event EventHandler<ReaperPositionChangedEventArgs>? PositionChanged;
 
@@ -108,8 +123,8 @@ internal class ReaperClient : IReaperClient, IDisposable
         var tsNum = int.Parse(beatposTokens[6]);
         var tsDen = int.Parse(beatposTokens[7]);
 
-        // REAPER's web API neposílá tempo (TRANSPORT ani BEATPOS); přebíráme poslední
-        // známé z OSC. Při stání REAPER OSC nestreamuje, tak se hodnota nesmí ztratit.
+        // The web API exposes no tempo (neither TRANSPORT nor BEATPOS), so the value
+        // known from OSC is carried over — REAPER sends no OSC at all while stopped
         double tempo = lastPosition?.TempoBpm ?? 0;
 
         var position = new ReaperPosition(
@@ -156,7 +171,12 @@ internal class ReaperClient : IReaperClient, IDisposable
         foreach (var msg in bundle.Messages)
         {
             HandleOscMessage(msg, ref currentPosition);
-        }        
+        }
+
+        if (!tempoReportedByReaper)
+        {
+            currentPosition = WithDerivedTempo(currentPosition);
+        }
 
         if (currentPosition != lastPosition)
         {
@@ -232,10 +252,82 @@ internal class ReaperClient : IReaperClient, IDisposable
             case "/tempo/raw":
                 if (args.Length > 0 && args[0] is float tempo && tempo > 0)
                 {
+                    tempoReportedByReaper = true;
                     currentPosition = currentPosition with { TempoBpm = tempo };
                 }
                 break;
         }
+    }
+
+    // REAPER pushes /tempo/raw only when the tempo actually changes, so a session that
+    // attaches to an already loaded project never learns it. Measure BPM from how fast
+    // the beat position advances during playback instead.
+    private ReaperPosition WithDerivedTempo(ReaperPosition position)
+    {
+        if (position.PlayState != ReaperPlayState.Playing)
+        {
+            tempoAnchorSeconds = double.NaN;
+            return position;
+        }
+
+        if (ParseBeatPosition(position.PositionStringBeats, position.TimeSigNumerator) is not double beats)
+        {
+            return position;
+        }
+
+        if (double.IsNaN(tempoAnchorSeconds))
+        {
+            tempoAnchorSeconds = position.PositionSeconds;
+            tempoAnchorBeats = beats;
+            return position;
+        }
+
+        double elapsed = position.PositionSeconds - tempoAnchorSeconds;
+        if (elapsed < TempoWindowSeconds)
+        {
+            return position;
+        }
+
+        double advanced = beats - tempoAnchorBeats;
+        tempoAnchorSeconds = position.PositionSeconds;
+        tempoAnchorBeats = beats;
+
+        if (elapsed > TempoWindowMaxSeconds || advanced <= 0)
+        {
+            return position;
+        }
+
+        // Measured precision does not justify finer steps than half a BPM
+        double bpm = Math.Round(60.0 * advanced / elapsed * 2, MidpointRounding.AwayFromZero) / 2;
+
+        return bpm is >= TempoMinBpm and <= TempoMaxBpm
+            ? position with { TempoBpm = bpm }
+            : position;
+    }
+
+    // "measures.beats.hundredths" (1-based) -> absolute beats from the project start
+    internal static double? ParseBeatPosition(string value, int beatsPerMeasure)
+    {
+        if (beatsPerMeasure <= 0 || string.IsNullOrEmpty(value))
+        {
+            return null;
+        }
+
+        string[] parts = value.Split('.');
+        if (parts.Length < 2
+            || !int.TryParse(parts[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out int measure)
+            || !int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int beat))
+        {
+            return null;
+        }
+
+        double fraction = 0;
+        if (parts.Length > 2 && int.TryParse(parts[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out int hundredths))
+        {
+            fraction = hundredths / 100.0;
+        }
+
+        return (measure - 1) * beatsPerMeasure + (beat - 1) + fraction;
     }
 
     protected virtual void Dispose(bool disposing)
