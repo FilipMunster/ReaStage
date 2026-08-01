@@ -56,6 +56,13 @@ public class ReaperClientTests
         Assert.Equal(4, ReaperClient.ParseBeatPosition("2.1", 4));
     }
 
+    [Fact]
+    public void ParseBeatPosition_EighthTimeSignature_ConvertsToQuarterNotes()
+    {
+        // A 6/8 bar is six eighths, i.e. three quarter notes; tempo is per quarter note
+        Assert.Equal(3, ReaperClient.ParseBeatPosition("2.1.00", 6, 8));
+    }
+
     [Theory]
     [InlineData("", 4)]
     [InlineData("nonsense", 4)]

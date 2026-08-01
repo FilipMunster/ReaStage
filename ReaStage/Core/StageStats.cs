@@ -59,6 +59,34 @@ public static class StageStats
         return $"{bar + firstIndex}.{beat + firstIndex}";
     }
 
+    // "4/4", empty when REAPER has not reported a time signature yet
+    public static string FormatTimeSignature(int numerator, int denominator)
+    {
+        return numerator > 0 && denominator > 0
+            ? $"{numerator}/{denominator}"
+            : string.Empty;
+    }
+
+    // Beat within the current bar (1-based) out of "measures.beats.hundredths";
+    // null when the string cannot be read
+    public static int? BeatInBar(string positionStringBeats)
+    {
+        if (string.IsNullOrEmpty(positionStringBeats))
+        {
+            return null;
+        }
+
+        string[] parts = positionStringBeats.Split('.');
+        if (parts.Length < 2
+            || !int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int beat)
+            || beat < 1)
+        {
+            return null;
+        }
+
+        return beat;
+    }
+
     public static string FormatBpm(double tempo)
     {
         return tempo > 0

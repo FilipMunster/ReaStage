@@ -285,7 +285,7 @@ internal class ReaperClient : IReaperClient, IDisposable
             return position;
         }
 
-        if (ParseBeatPosition(position.PositionStringBeats, position.TimeSigNumerator) is not double beats)
+        if (ParseBeatPosition(position.PositionStringBeats, position.TimeSigNumerator, position.TimeSigDenominator) is not double beats)
         {
             return position;
         }
@@ -320,10 +320,12 @@ internal class ReaperClient : IReaperClient, IDisposable
             : position;
     }
 
-    // "measures.beats.hundredths" (1-based) -> absolute beats from the project start
-    internal static double? ParseBeatPosition(string value, int beatsPerMeasure)
+    // "measures.beats.hundredths" (1-based) -> absolute quarter notes from the project
+    // start. REAPER counts beats of the time signature here but tempo is in quarter
+    // notes, so x/8 has to be scaled down (no-op for the usual x/4).
+    internal static double? ParseBeatPosition(string value, int beatsPerMeasure, int beatUnit = 4)
     {
-        if (beatsPerMeasure <= 0 || string.IsNullOrEmpty(value))
+        if (beatsPerMeasure <= 0 || beatUnit <= 0 || string.IsNullOrEmpty(value))
         {
             return null;
         }
@@ -342,7 +344,8 @@ internal class ReaperClient : IReaperClient, IDisposable
             fraction = hundredths / 100.0;
         }
 
-        return (measure - 1) * beatsPerMeasure + (beat - 1) + fraction;
+        double beatsFromStart = (measure - 1) * beatsPerMeasure + (beat - 1) + fraction;
+        return beatsFromStart * (4.0 / beatUnit);
     }
 
     protected virtual void Dispose(bool disposing)

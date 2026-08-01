@@ -72,6 +72,19 @@
             <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
             <Setter Property="VerticalAlignment" Value="Bottom"/>
         </Style>
+        <!-- Metronome: no transitions, the dots must land with the audio click -->
+        <Style Selector="Ellipse.beatDot">
+            <Setter Property="Fill" Value="Transparent"/>
+            <Setter Property="Stroke" Value="#3DFFFFFF"/>
+            <Setter Property="StrokeThickness" Value="2"/>
+        </Style>
+        <Style Selector="Ellipse.beatDot.lit">
+            <Setter Property="Fill" Value="{StaticResource AccentBrush}"/>
+            <Setter Property="Stroke" Value="Transparent"/>
+        </Style>
+        <Style Selector="Ellipse.beatDot.lit.downbeat">
+            <Setter Property="Fill" Value="{StaticResource DownbeatBrush}"/>
+        </Style>
         <Style Selector="Border.currentSong.playing">
             <Setter Property="BorderBrush" Value="{StaticResource AccentDimBrush}"/>
             <Setter Property="BoxShadow" Value="0 0 42 2 #384ADE80, 0 18 48 0 #8C000000"/>
@@ -192,7 +205,30 @@
                                FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=28}"/>
                     <TextBlock Text="{Binding BpmText}" Classes="statValue"
                                FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=28}"/>
+                    <TextBlock Text="{Binding TimeSignatureText}" Classes="statValue"
+                               FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=28}"/>
                 </StackPanel>
+
+                <!-- Visual metronome, left aligned so the dots keep their place
+                     when the bar length changes -->
+                <ItemsControl Grid.Column="1" ItemsSource="{Binding MetronomeDots}"
+                              HorizontalAlignment="Left" VerticalAlignment="Center"
+                              Margin="26,0,0,0">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="11"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:MetronomeDot">
+                            <Ellipse Classes="beatDot"
+                                     Classes.lit="{Binding IsLit}"
+                                     Classes.downbeat="{Binding IsDownbeat}"
+                                     Width="{Binding #StageRoot.((vm:StageViewModel)DataContext).FontScale, Converter={StaticResource FontScale}, ConverterParameter=15}"
+                                     Height="{Binding #StageRoot.((vm:StageViewModel)DataContext).FontScale, Converter={StaticResource FontScale}, ConverterParameter=15}"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
                     <TextBlock Text="zbývá" Classes="statLabel"

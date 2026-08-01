@@ -14,6 +14,7 @@
         <SolidColorBrush x:Key="TextSecondaryBrush" Color="#9AA1AD"/>
         <SolidColorBrush x:Key="AccentBrush" Color="#4ADE80"/>
         <SolidColorBrush x:Key="AccentDimBrush" Color="#804ADE80"/>
+        <SolidColorBrush x:Key="DownbeatBrush" Color="#FBBF24"/>
         <SolidColorBrush x:Key="DangerBrush" Color="#FF6B6B"/>
     </Application.Resources>
 

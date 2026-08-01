@@ -42,6 +42,33 @@ public class StageStatsTests
     }
 
     [Theory]
+    [InlineData(4, 4, "4/4")]
+    [InlineData(6, 8, "6/8")]
+    [InlineData(0, 0, "")] // not reported by REAPER yet
+    public void FormatTimeSignature_FormatsOrStaysEmpty(int numerator, int denominator, string expected)
+    {
+        Assert.Equal(expected, StageStats.FormatTimeSignature(numerator, denominator));
+    }
+
+    [Theory]
+    [InlineData("586.4.64", 4)]
+    [InlineData("1.1.00", 1)]
+    [InlineData("12.3", 3)]
+    public void BeatInBar_ReadsTheBeatComponent(string positionStringBeats, int expected)
+    {
+        Assert.Equal(expected, StageStats.BeatInBar(positionStringBeats));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("586")]
+    [InlineData("nonsense")]
+    public void BeatInBar_InvalidInput_ReturnsNull(string positionStringBeats)
+    {
+        Assert.Null(StageStats.BeatInBar(positionStringBeats));
+    }
+
+    [Theory]
     [InlineData(128, "128 BPM")]
     [InlineData(120.5, "120.5 BPM")]
     [InlineData(0, "— BPM")]

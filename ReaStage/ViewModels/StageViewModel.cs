@@ -59,6 +59,12 @@ public partial class StageViewModel : ViewModelBase
     private string bpmText = string.Empty;
 
     [ObservableProperty]
+    private string timeSignatureText = string.Empty;
+
+    [ObservableProperty]
+    private IReadOnlyList<MetronomeDot> metronomeDots = [];
+
+    [ObservableProperty]
     private string orderText = string.Empty;
 
     [ObservableProperty]
@@ -198,6 +204,8 @@ public partial class StageViewModel : ViewModelBase
         }
 
         BpmText = StageStats.FormatBpm(position.TempoBpm);
+        TimeSignatureText = StageStats.FormatTimeSignature(position.TimeSigNumerator, position.TimeSigDenominator);
+        UpdateMetronome(position);
         OrderText = StageStats.OrderText(index, items.Count);
         remainingPlaylistSeconds = StageStats.RemainingPlaylistSeconds(items, index, position.PositionSeconds);
         RemainingPlaylistText = StageStats.FormatClock(remainingPlaylistSeconds);
@@ -227,6 +235,38 @@ public partial class StageViewModel : ViewModelBase
         string? remainingBeats = StageStats.FormatBarBeatDuration(remaining, position.TempoBpm, position.TimeSigNumerator, position.TimeSigDenominator);
         ElapsedBeatsText = elapsedBeats ?? string.Empty;
         RemainingBeatsText = remainingBeats is null ? string.Empty : "−" + remainingBeats;
+    }
+
+    // The dots follow REAPER's reported beat directly — no local clock, no smoothing,
+    // so they stay in step with the audio metronome as closely as OSC allows
+    private void UpdateMetronome(ReaperPosition position)
+    {
+        int beatsPerBar = position.TimeSigNumerator;
+        if (beatsPerBar <= 0)
+        {
+            if (MetronomeDots.Count > 0)
+            {
+                MetronomeDots = [];
+            }
+
+            return;
+        }
+
+        // Rebuild only when the bar length changes
+        if (MetronomeDots.Count != beatsPerBar)
+        {
+            MetronomeDots = Enumerable.Range(0, beatsPerBar).Select(i => new MetronomeDot(i == 0)).ToList();
+        }
+
+        bool playing = position.PlayState is ReaperPlayState.Playing or ReaperPlayState.Recording;
+        int? beat = playing ? StageStats.BeatInBar(position.PositionStringBeats) : null;
+
+        // Variant A: beats fill up through the bar and reset on the downbeat
+        int litCount = beat is int b ? Math.Min(b, beatsPerBar) : 0;
+        for (int i = 0; i < MetronomeDots.Count; i++)
+        {
+            MetronomeDots[i].IsLit = i < litCount;
+        }
     }
 
     private void ClearSongTimes()
