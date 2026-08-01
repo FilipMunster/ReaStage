@@ -100,8 +100,8 @@
     </UserControl.Styles>
 
     <Panel>
-        <!-- Bottom margin reserves room for the status bar and transport buttons -->
-        <Grid RowDefinitions="*,Auto,*" Margin="48,24,48,140">
+        <!-- Bottom margin reserves room for the status bar -->
+        <Grid RowDefinitions="*,Auto,*" Margin="48,24,48,74">
 
             <!-- Previous songs, closest to the current song at the bottom -->
             <ItemsControl Grid.Row="0" ItemsSource="{Binding PreviousSongs}" VerticalAlignment="Bottom">
@@ -115,10 +115,12 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <!-- Current song with progress fill -->
+            <!-- Current song with progress fill; tapping the card is Play/Pause -->
             <Border Grid.Row="1" x:Name="CurrentFrame"
                     Classes="currentSong"
-                    Classes.playing="{Binding IsPlaying}">
+                    Classes.playing="{Binding IsPlaying}"
+                    Cursor="Hand"
+                    Tapped="OnCurrentSongTapped">
                 <Panel>
                     <Border HorizontalAlignment="Left" CornerRadius="19">
                         <Border.Background>
@@ -143,7 +145,13 @@
                                FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=58}"
                                FontWeight="Bold" Foreground="#FFFFFF"
                                TextAlignment="Center" TextTrimming="CharacterEllipsis"
-                               HorizontalAlignment="Center" VerticalAlignment="Center" Margin="28,28"/>
+                               HorizontalAlignment="Center" VerticalAlignment="Center" Margin="116,26"/>
+
+                    <!-- Previous / next sit on the card edges; the rest of the card taps to Play/Pause -->
+                    <Button Classes="transport" Content="⏮" Command="{Binding PreviousCommand}"
+                            HorizontalAlignment="Left" VerticalAlignment="Center" Margin="16,0,0,0"/>
+                    <Button Classes="transport" Content="⏭" Command="{Binding NextCommand}"
+                            HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,16,0"/>
 
                     <!-- Elapsed (left) and remaining (right), mm:ss over bar.beat -->
                     <Grid ColumnDefinitions="*,*" VerticalAlignment="Bottom" Margin="28,0,28,16">
@@ -176,8 +184,8 @@
             </ItemsControl>
         </Grid>
 
-        <!-- Bottom area: statistics row above the transport buttons -->
-        <StackPanel VerticalAlignment="Bottom" Margin="28,0,28,14" Spacing="10">
+        <!-- Bottom status bar -->
+        <Panel VerticalAlignment="Bottom" Margin="28,0,28,16">
             <Grid ColumnDefinitions="Auto,*,Auto">
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="16">
                     <TextBlock Text="{Binding OrderText}" Classes="statValue"
@@ -197,13 +205,7 @@
                                FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=34}"/>
                 </StackPanel>
             </Grid>
-
-            <StackPanel Orientation="Horizontal" Spacing="20" HorizontalAlignment="Center">
-                <Button Classes="transport" Content="⏮" Command="{Binding PreviousCommand}"/>
-                <Button Classes="transport" Content="⏯" Command="{Binding PlayPauseCommand}"/>
-                <Button Classes="transport" Content="⏭" Command="{Binding NextCommand}"/>
-            </StackPanel>
-        </StackPanel>
+        </Panel>
 
         <!-- REAPER unreachable overlay -->
         <Border Background="#E60C0B10" IsVisible="{Binding !IsReaperReachable}">
