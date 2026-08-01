@@ -108,9 +108,13 @@ internal class ReaperClient : IReaperClient, IDisposable
         var tsNum = int.Parse(beatposTokens[6]);
         var tsDen = int.Parse(beatposTokens[7]);
 
+        // REAPER's web API neposílá tempo (TRANSPORT ani BEATPOS); přebíráme poslední
+        // známé z OSC. Při stání REAPER OSC nestreamuje, tak se hodnota nesmí ztratit.
+        double tempo = lastPosition?.TempoBpm ?? 0;
+
         var position = new ReaperPosition(
             playState, posSec, fullBeat, measure, beatsInMeasure,
-            tsNum, tsDen, isRepeat, posStr, posStrBeats
+            tsNum, tsDen, isRepeat, posStr, posStrBeats, tempo
         );
 
         lastPosition = position;
@@ -222,6 +226,13 @@ internal class ReaperClient : IReaperClient, IDisposable
                 if (args.Length > 0 && args[0] is float rep)
                 {
                     currentPosition = currentPosition with { IsRepeatOn = rep > 0 };
+                }
+                break;
+
+            case "/tempo/raw":
+                if (args.Length > 0 && args[0] is float tempo && tempo > 0)
+                {
+                    currentPosition = currentPosition with { TempoBpm = tempo };
                 }
                 break;
         }

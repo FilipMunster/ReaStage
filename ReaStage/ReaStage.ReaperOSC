@@ -27,6 +27,8 @@ REAPER_TRACK_FOLLOWS REAPER
 TIME f/time s/time/str
 # BEAT token returns string beat representation (measures.beats.hundredths)
 BEAT s/beat/str
+# TEMPO token returns float tempo in BPM
+TEMPO f/tempo/raw
 
 # Transport Reporting
 # REAPER sends binary (1/0) for each state individually

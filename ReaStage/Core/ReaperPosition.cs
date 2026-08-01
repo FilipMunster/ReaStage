@@ -14,5 +14,6 @@ public readonly record struct ReaperPosition(
     int TimeSigDenominator,
     bool IsRepeatOn,
     string PositionString,       // Formát dle projektu (např. čas)
-    string PositionStringBeats   // Formát Measures.Beats.Hundredths
+    string PositionStringBeats,  // Formát Measures.Beats.Hundredths
+    double TempoBpm              // Aktuální tempo v BPM
 );

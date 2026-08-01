@@ -146,7 +146,7 @@ public class PlaybackCoordinatorTests
 
     private static ReaperPosition Pos(double seconds, ReaperPlayState state = ReaperPlayState.Playing)
     {
-        return new ReaperPosition(state, seconds, 0, 0, 0, 4, 4, false, $"{seconds}", string.Empty);
+        return new ReaperPosition(state, seconds, 0, 0, 0, 4, 4, false, $"{seconds}", string.Empty, 0);
     }
 
     [Fact]
