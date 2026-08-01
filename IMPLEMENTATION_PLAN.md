@@ -180,47 +180,78 @@ Tři tlačítka:
 - Nový/duplikovat/přejmenovat, drag & drop, soft delete + obnova, autosave.
 - Blokace transportních kláves při otevřeném editoru.
 
-## 5. Etapa 2 — ovládání myší, statistiky, UX nastavení
+## 5. Etapa 2 — ovládání myší, scrubbing, statistiky, web
 
 ### 5.1 Rozhodnutí (odsouhlaseno)
 
 | Téma | Rozhodnutí |
 |---|---|
-| Hover tlačítka | Rewind/forward volají tutéž logiku koordinátoru jako klávesy ← / → (rewind včetně prahu `previousThresholdSeconds`). Jedna sdílená cesta, žádné odlišné chování myši vs. klávesnice. |
+| Transportní tlačítka | Přesunuta do spodní lišty okna (ne overlay nad aktuální písní — tam je nově scrubbing). Zašedlá, poloprůhledná; při najetí myší se zvýrazní. Rewind/forward/play-pauza volají tutéž logiku koordinátoru jako klávesy ← / → / Mezerník (rewind včetně prahu `previousThresholdSeconds`). |
+| Scrubbing pozice | Přesun pozice v aktuální písni dvěma cestami: tažením myší nad kartou aktuální písně, nebo klávesovým akordem (držení klávesy Play/Pauza + Předchozí/Další). Krok = jeden takt, cíl vždy zarovnán na začátek taktu. Nezastavuje přehrávání (jen `SetPosition`, bez Stopu). |
 | Klik na jinou píseň | Dvoukrokově: první klik píseň „odjistí" (zvýraznění), druhý klik potvrdí skok (Stop + SetPosition na začátek písně). Pojistka proti překliku na pódiu. |
-| Údaje v kartě aktuální písně | Časy od začátku / do konce **nahrazují** dosavadní pozici ve formátu REAPERu (beats) — v kartě zůstane jen název + nové časy. |
+| Časy v kartě aktuální písně | Čas od začátku i zbývající do konce, každý **současně ve dvou formátech**: `mm:ss` i `bar:beat`. Nahrazují dosavadní jediný údaj pozice ve formátu REAPERu. |
+| BPM | Ve statistikách se zobrazuje aktuální tempo (BPM). |
+| Zdroj tempa | REAPER dnes tempo neposílá (OSC ani HTTP). Rozšíří se OSC pattern (`TEMPO f/tempo/raw`) i HTTP cesta a přidá se pole do `ReaperPosition`. Vyžaduje re-import OSC configu v REAPERu. |
 | Zbývající čas playlistu | Čistý hudební čas: zbytek aktuální písně + součet délek následujících písní playlistu. Čekání mezi písněmi se nepredikuje — odhad času konce se při stání posouvá. |
+| Webové ovládání | HTTP server v ReaStage (**ASP.NET Core minimal API / Kestrel**), port v nastavení, bez autentizace, jen StageView, optimalizováno pro mobil. Stránka aktualizuje stav **pollingem** (à la REAPER `reaper_www_root`). |
 
-### 5.2 Fáze 7 — Ovládání myší ve stage view
+### 5.2 Fáze 7 — Tempo z REAPERu (základ pro BPM i scrubbing)
 
-- **Hover overlay nad aktuální písní:** při najetí myší na kartu aktuální písně
-  se zobrazí tři poloprůhledná tlačítka (⏮ rewind, ⏯ play/pauza, ⏭ forward)
-  překrývající kartu; zmizí po opuštění kurzorem. Volají `GoToPreviousAsync` /
-  `TogglePlayPauseAsync` / `GoToNextAsync` na koordinátoru — identické chování
-  jako klávesy.
-- **Klik na jinou viditelnou píseň** (předchozí i následující): první klik kartu
-  odjistí — zvýrazní se (akcentový rámeček) a čeká na potvrzení; druhý klik do
-  ~4 s provede Stop + SetPosition na začátek té písně. Klik jinam, Escape nebo
-  timeout odjištění zruší. Odjištění je čistě UI stav ve `StageViewModel`.
-- Nový příkaz koordinátoru: `JumpToItemAtAsync(int index)` (zobecnění stávající
-  interní `JumpToItemAsync`) pro skok na konkrétní položku playlistu.
+- Rozšířit `ReaStage.ReaperOSC` o řádek `TEMPO f/tempo/raw` (uživatel poté
+  re-importuje OSC config v REAPERu).
+- Nové pole `double TempoBpm` v `ReaperPosition` + handler pro OSC adresu
+  `/tempo/raw`.
+- `GetPosition()` (HTTP): doplnit tempo do dotazu a parsování. Pokud REAPER web API
+  tempo přímo nevystaví, HTTP fetch tempo vynechá a hodnota se doplní z první OSC
+  zprávy `/tempo/raw` (ověřit při implementaci).
+- Marshaling OSC událostí na UI vlákno je už vyřešen z fáze 1.
 
-### 5.3 Fáze 8 — Statistiky
+### 5.3 Fáze 8 — Ovládání myší a scrubbing ve stage view
 
-- **V kartě aktuální písně:** vlevo dole čas od začátku písně
-  (`pozice − start`), vpravo dole zbývající čas s prefixem minus
-  (`−(end − pozice)`). Nahrazuje dosavadní centrovaný údaj pozice.
+- **Transportní lišta dole (ne overlay):** tři tlačítka (⏮ rewind, ⏯ play/pauza,
+  ⏭ forward) ve spodní části okna, zašedlá a poloprůhledná; při najetí myší se
+  zvýrazní. Volají `GoToPreviousAsync` / `TogglePlayPauseAsync` / `GoToNextAsync`
+  na koordinátoru — identické chování jako klávesy. Karta aktuální písně tak
+  zůstává volná pro scrubbing.
+- **Scrubbing pozice v aktuální písni** (nezastavuje přehrávání, jen `SetPosition`):
+  - *Tažení myší* nad kartou aktuální písně: horizontální pozice kurzoru → cíl
+    v písni; cíl se průběžně (throttlovaně) zarovnává na nejbližší začátek taktu.
+  - *Klávesový akord:* Mezerník (Play/Pauza) funguje jako modifikátor — play/pause
+    se pošle až na **uvolnění** Mezerníku, a jen pokud během držení nebyla stisknuta
+    šipka. Mezerník down + šipka Předchozí/Další = posun o jeden takt zpět/vpřed
+    (zarovnaný na začátek taktu); následné puštění Mezerníku už play/pause nespustí.
+    Celé ovládání zůstává na těchto třech klávesách. Pozn.: přesouvá stisk play/pause
+    z key-down na key-up (drobná odchylka od kapitoly 1 „žádná vlastní logika").
+  - Délku taktu a hranice taktů počítat z `TempoBpm` a taktového rozměru
+    (`BeatsInMeasure`, time sig). Předpokládá konstantní tempo v písni — při změnách
+    tempa je zarovnání přibližné.
+- Nové příkazy koordinátoru: `SeekByBarsAsync(int deltaBars)` (klávesový akord),
+  `SeekWithinCurrentAsync(double fraction)` se zarovnáním na takt (tažení),
+  a `JumpToItemAtAsync(int index)` (zobecnění interní `JumpToItemAsync`) pro
+  two-click skok.
+- **Klik na jinou viditelnou píseň** (beze změny z původního návrhu): první klik
+  kartu odjistí (akcentový rámeček), druhý klik do ~4 s provede Stop + SetPosition
+  na začátek té písně. Klik jinam, Escape nebo timeout odjištění zruší. Odjištění je
+  čistě UI stav ve `StageViewModel`.
+
+### 5.4 Fáze 9 — Statistiky a časy
+
+- **V kartě aktuální písně:** vlevo dole čas od začátku písně (`pozice − start`),
+  vpravo dole zbývající čas s prefixem minus (`−(end − pozice)`). Každý údaj
+  **současně ve dvou formátech**: `mm:ss` i `bar:beat` (z `PositionStringBeats`,
+  resp. `MeasureCount`/`BeatsInMeasure`). Nahrazuje dosavadní centrovaný údaj pozice.
+- **Aktuální BPM** (z `TempoBpm`) — ve statistikách (spodní lišta nebo karta).
 - **Spodní stavová lišta stage view:**
   - pořadí: `N / M` (číslo aktuální písně / počet písní playlistu);
     ve stavu mezi písničkami `– / M`,
   - zbývající hudební čas do konce playlistu,
   - odhad času konce playlistu (hodiny, formát `HH:mm`) = teď + zbývající čas.
-- Formát časů: `m:ss`, nad hodinu `h:mm:ss`.
+- Formát časů: `m:ss`, nad hodinu `h:mm:ss`; bar:beat dle formátu REAPERu.
 - Odhad času konce se přepočítává na 1s časovači (posouvá se i při zastaveném
   transportu), ostatní hodnoty při změně pozice/playlistu.
 - Výpočty jako čisté funkce ve `StageViewModel` (nebo pomocná třída) + testy.
 
-### 5.4 Fáze 9 — UX nastavení
+### 5.5 Fáze 10 — UX nastavení
 
 - **Zachytávání kláves stiskem:** místo textového pole tlačítko zobrazující
   aktuální klávesu; klik přepne do režimu „Stiskni klávesu…", následující
@@ -231,6 +262,39 @@ Tři tlačítka:
   slider s číselnou hodnotou v nastavení. Multiplikátor se aplikuje na velikosti
   písma **pouze ve stage view** (názvy písní, časy, stavová lišta) — ostatní
   obrazovky beze změny. Projeví se okamžitě po uložení (bez restartu).
+- **Nastavení webového serveru:** povolení (on/off) a port webu (`web.enabled`,
+  `web.port` v `settings.json`, default např. 9125).
+
+### 5.6 Fáze 11 — Webové ovládání (mobil)
+
+- **Server:** HTTP server běžící v ReaStage; povolení a port z nastavení, **bez
+  autentizace** (určeno pro LAN). Návrh API: stavový endpoint (JSON — položky
+  playlistu, index aktuální písně, pozice/progress, play state, BPM, časy) +
+  command endpointy (play-pause, prev, next, jump na index). Web i desktop sdílí
+  logiku přes koordinátor / `StageViewModel`.
+- **Stránka:** jedna statická HTML5 stránka (bez frameworku, bez build stepu),
+  přiložená jako embedded resource. Tmavý vzhled koherentní s ReaStage (sdílená
+  paleta a typografie v CSS). Optimalizováno pro mobil (viewport, velké dotykové
+  cíle). Obsah = **pouze StageView**: celý playlist se zvýrazněnou aktuální písní
+  (její box dostatečně vysoký pro bezpečný tap).
+- **Gesta:**
+  - swipe nahoru / dolů = scroll seznamu (celý playlist, neomezeně písní před i za);
+    po skončení scrollu se po timeoutu seznam zacentruje na aktuální píseň,
+  - swipe doleva / doprava = jako klávesy ← / → (Předchozí / Další),
+  - tap na aktuální píseň = jako Mezerník (play/pause),
+  - tap na jinou píseň = jako klik myší v desktopu: první tap odjistí, druhý potvrdí
+    skok. Odjištění se řeší na straně stránky (klient), aby web nezasahoval do
+    odjišťovacího stavu desktopu.
+- **Stack (rozhodnuto):** server = **ASP.NET Core minimal API** (Kestrel) — bind na
+  `http://0.0.0.0:<port>` bez adminu/urlacl, zabudované servírování statické stránky
+  + JSON, integrace se stávajícím `Microsoft.Extensions.*` (DI, logging). Přidá se
+  `FrameworkReference Microsoft.AspNetCore.App`; publikovat self-contained. Hostování
+  na pozadí (IHostedService / vlastní vlákno), start/stop dle `web.enabled`.
+- **Aktualizace (rozhodnuto):** **polling** — stránka tahá stavový endpoint á
+  ~150–250 ms a po každém příkazu si stav hned vyžádá (svižná odezva bez čekání na
+  další tik). Bez SSE. Referenční statické stránky REAPERu: `…/Plugins/reaper_www_root/`
+  (`basic.html`, `click.html`, `index.html`) — stejný princip (polling `/_/COMMAND`
+  přes XHR).
 
 ## 6. Rizika a poznámky
 
