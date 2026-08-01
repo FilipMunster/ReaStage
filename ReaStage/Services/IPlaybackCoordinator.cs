@@ -22,10 +22,6 @@ public interface IPlaybackCoordinator
     Task GoToNextAsync();
     Task GoToPreviousAsync();
 
-    // Scrubbing within the current song — seek only (no Stop), aligned to bar starts
-    Task SeekByBarsAsync(int deltaBars);
-    Task SeekWithinCurrentAsync(double fraction);
-
     // Two-click jump to a specific playlist item (Stop + SetPosition to its start)
     Task JumpToItemAtAsync(int index);
 }

@@ -13,9 +13,6 @@ internal class PlaybackCoordinator : IPlaybackCoordinator, IDisposable
     // larger forward jumps are treated as manual seeks
     private const double EndCrossingSlackSeconds = 2.0;
 
-    // Keep bar-aligned seek targets just inside the song so they map back to it
-    private const double SeekEndSlackSeconds = 0.01;
-
     private readonly IReaperClient client;
     private readonly IRegionCatalog regionCatalog;
     private readonly IPlaylistService playlistService;
@@ -103,87 +100,6 @@ internal class PlaybackCoordinator : IPlaybackCoordinator, IDisposable
         }
 
         await JumpToItemAsync(index);
-    }
-
-    public async Task SeekByBarsAsync(int deltaBars)
-    {
-        if (CurrentIndex < 0)
-        {
-            return;
-        }
-
-        ReaperRegion song = ActiveItems[CurrentIndex].Region!.Value;
-        double barLength = BarLengthSeconds();
-        if (barLength <= 0)
-        {
-            return;
-        }
-
-        double barsFromStart = (Position.PositionSeconds - song.StartPosition) / barLength;
-        int targetBar = (int)Math.Round(barsFromStart) + deltaBars;
-        double target = song.StartPosition + targetBar * barLength;
-
-        await SeekAsync(ClampToSong(target, song));
-    }
-
-    public async Task SeekWithinCurrentAsync(double fraction)
-    {
-        if (CurrentIndex < 0)
-        {
-            return;
-        }
-
-        ReaperRegion song = ActiveItems[CurrentIndex].Region!.Value;
-        double length = song.EndPosition - song.StartPosition;
-        if (length <= 0)
-        {
-            return;
-        }
-
-        double raw = song.StartPosition + Math.Clamp(fraction, 0, 1) * length;
-
-        // Align to the nearest bar start; without tempo fall back to the raw target
-        double barLength = BarLengthSeconds();
-        double target = barLength > 0
-            ? song.StartPosition + Math.Round((raw - song.StartPosition) / barLength) * barLength
-            : raw;
-
-        await SeekAsync(ClampToSong(target, song));
-    }
-
-    // Assumes constant tempo within the song; tempo changes make alignment approximate
-    private double BarLengthSeconds()
-    {
-        ReaperPosition p = Position;
-        if (p.TempoBpm <= 0 || p.TimeSigNumerator <= 0 || p.TimeSigDenominator <= 0)
-        {
-            return 0;
-        }
-
-        return p.TimeSigNumerator * (4.0 / p.TimeSigDenominator) * (60.0 / p.TempoBpm);
-    }
-
-    private static double ClampToSong(double seconds, ReaperRegion song)
-    {
-        double max = Math.Max(song.StartPosition, song.EndPosition - SeekEndSlackSeconds);
-        return Math.Clamp(seconds, song.StartPosition, max);
-    }
-
-    private async Task SeekAsync(double seconds)
-    {
-        try
-        {
-            // Seek only, no Stop — scrubbing must not interrupt playback
-            await client.SetPosition(seconds);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Failed to seek to {Seconds}s", seconds);
-            return;
-        }
-
-        // While stopped REAPER streams no OSC, so the new position must be fetched
-        await RefreshPositionAsync();
     }
 
     private async Task JumpToItemAsync(int index)

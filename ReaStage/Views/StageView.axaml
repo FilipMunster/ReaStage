@@ -107,13 +107,10 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <!-- Current song with progress fill; drag horizontally to scrub -->
+            <!-- Current song with progress fill -->
             <Border Grid.Row="1" x:Name="CurrentFrame"
                     Classes="currentSong"
-                    Classes.playing="{Binding IsPlaying}"
-                    PointerPressed="OnScrubPressed"
-                    PointerMoved="OnScrubMoved"
-                    PointerReleased="OnScrubReleased">
+                    Classes.playing="{Binding IsPlaying}">
                 <Panel>
                     <Border HorizontalAlignment="Left" CornerRadius="19">
                         <Border.Background>

@@ -121,13 +121,6 @@ public partial class StageViewModel : ViewModelBase
     [RelayCommand]
     private Task Next() => playback.GoToNextAsync();
 
-    // Mouse drag over the current song card -> seek within the song (bar-aligned)
-    public async Task ScrubToAsync(double fraction)
-    {
-        ClearArm();
-        await playback.SeekWithinCurrentAsync(fraction);
-    }
-
     // Two-click jump: first click arms the song, second within the timeout confirms
     [RelayCommand]
     private async Task ArmOrJump(StageSongItem? item)

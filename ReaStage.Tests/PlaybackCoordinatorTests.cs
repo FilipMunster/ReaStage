@@ -415,61 +415,6 @@ public class PlaybackCoordinatorTests
     }
 
     [Fact]
-    public async Task SeekByBars_Forward_MovesOneBarWithoutStopping()
-    {
-        PlaybackCoordinator coordinator = CreateCoordinator();
-        client.RaisePosition(Pos(150, ReaperPlayState.Playing, 120)); // 20 bars into song Two
-
-        await coordinator.SeekByBarsAsync(1);
-
-        Assert.Equal(["setpos:152"], client.Commands);
-    }
-
-    [Fact]
-    public async Task SeekByBars_Backward_MovesOneBarBack()
-    {
-        PlaybackCoordinator coordinator = CreateCoordinator();
-        client.RaisePosition(Pos(150, ReaperPlayState.Playing, 120));
-
-        await coordinator.SeekByBarsAsync(-1);
-
-        Assert.Equal(["setpos:148"], client.Commands);
-    }
-
-    [Fact]
-    public async Task SeekByBars_NoTempo_DoesNothing()
-    {
-        PlaybackCoordinator coordinator = CreateCoordinator();
-        client.RaisePosition(Pos(150, ReaperPlayState.Playing, 0));
-
-        await coordinator.SeekByBarsAsync(1);
-
-        Assert.Empty(client.Commands);
-    }
-
-    [Fact]
-    public async Task SeekByBars_BetweenSongs_DoesNothing()
-    {
-        PlaybackCoordinator coordinator = CreateCoordinator();
-        client.RaisePosition(Pos(105, ReaperPlayState.Playing, 120)); // gap
-
-        await coordinator.SeekByBarsAsync(1);
-
-        Assert.Empty(client.Commands);
-    }
-
-    [Fact]
-    public async Task SeekWithinCurrent_AlignsToNearestBar()
-    {
-        PlaybackCoordinator coordinator = CreateCoordinator();
-        client.RaisePosition(Pos(150, ReaperPlayState.Playing, 120)); // song Two [110,200], length 90
-
-        await coordinator.SeekWithinCurrentAsync(0.4); // raw 146 -> already on a bar
-
-        Assert.Equal(["setpos:146"], client.Commands);
-    }
-
-    [Fact]
     public async Task JumpToItemAt_InRange_StopsAndSeeksToSongStart()
     {
         PlaybackCoordinator coordinator = CreateCoordinator();

@@ -186,8 +186,8 @@ Tři tlačítka:
 
 | Téma | Rozhodnutí |
 |---|---|
-| Transportní tlačítka | Přesunuta do spodní lišty okna (ne overlay nad aktuální písní — tam je nově scrubbing). Zašedlá, poloprůhledná; při najetí myší se zvýrazní. Rewind/forward/play-pauza volají tutéž logiku koordinátoru jako klávesy ← / → / Mezerník (rewind včetně prahu `previousThresholdSeconds`). |
-| Scrubbing pozice | Přesun pozice v aktuální písni dvěma cestami: tažením myší nad kartou aktuální písně, nebo klávesovým akordem (držení klávesy Play/Pauza + Předchozí/Další). Krok = jeden takt, cíl vždy zarovnán na začátek taktu. Nezastavuje přehrávání (jen `SetPosition`, bez Stopu). |
+| Transportní tlačítka | Přesunuta do spodní lišty okna (ne overlay nad aktuální písní). Zašedlá, poloprůhledná; při najetí myší se zvýrazní. Rewind/forward/play-pauza volají tutéž logiku koordinátoru jako klávesy ← / → / Mezerník (rewind včetně prahu `previousThresholdSeconds`). |
+| Scrubbing pozice | **Zamítnuto** (implementováno a následně odstraněno). Tažení myší nad kartou aktuální písně ani akord Mezerník + šipka se v praxi neosvědčily; Mezerník tak zůstává u chování z kapitoly 1 (play/pause na stisk, žádná vlastní logika). |
 | Klik na jinou píseň | Dvoukrokově: první klik píseň „odjistí" (zvýraznění), druhý klik potvrdí skok (Stop + SetPosition na začátek písně). Pojistka proti překliku na pódiu. |
 | Časy v kartě aktuální písně | Čas od začátku i zbývající do konce, každý **současně ve dvou formátech**: `mm:ss` i `bar:beat`. Nahrazují dosavadní jediný údaj pozice ve formátu REAPERu. |
 | BPM | Ve statistikách se zobrazuje aktuální tempo (BPM). |
@@ -206,29 +206,18 @@ Tři tlačítka:
   zprávy `/tempo/raw` (ověřit při implementaci).
 - Marshaling OSC událostí na UI vlákno je už vyřešen z fáze 1.
 
-### 5.3 Fáze 8 — Ovládání myší a scrubbing ve stage view
+### 5.3 Fáze 8 — Ovládání myší ve stage view
 
 - **Transportní lišta dole (ne overlay):** tři tlačítka (⏮ rewind, ⏯ play/pauza,
   ⏭ forward) ve spodní části okna, zašedlá a poloprůhledná; při najetí myší se
   zvýrazní. Volají `GoToPreviousAsync` / `TogglePlayPauseAsync` / `GoToNextAsync`
-  na koordinátoru — identické chování jako klávesy. Karta aktuální písně tak
-  zůstává volná pro scrubbing.
-- **Scrubbing pozice v aktuální písni** (nezastavuje přehrávání, jen `SetPosition`):
-  - *Tažení myší* nad kartou aktuální písně: horizontální pozice kurzoru → cíl
-    v písni; cíl se průběžně (throttlovaně) zarovnává na nejbližší začátek taktu.
-  - *Klávesový akord:* Mezerník (Play/Pauza) funguje jako modifikátor — play/pause
-    se pošle až na **uvolnění** Mezerníku, a jen pokud během držení nebyla stisknuta
-    šipka. Mezerník down + šipka Předchozí/Další = posun o jeden takt zpět/vpřed
-    (zarovnaný na začátek taktu); následné puštění Mezerníku už play/pause nespustí.
-    Celé ovládání zůstává na těchto třech klávesách. Pozn.: přesouvá stisk play/pause
-    z key-down na key-up (drobná odchylka od kapitoly 1 „žádná vlastní logika").
-  - Délku taktu a hranice taktů počítat z `TempoBpm` a taktového rozměru
-    (`BeatsInMeasure`, time sig). Předpokládá konstantní tempo v písni — při změnách
-    tempa je zarovnání přibližné.
-- Nové příkazy koordinátoru: `SeekByBarsAsync(int deltaBars)` (klávesový akord),
-  `SeekWithinCurrentAsync(double fraction)` se zarovnáním na takt (tažení),
-  a `JumpToItemAtAsync(int index)` (zobecnění interní `JumpToItemAsync`) pro
-  two-click skok.
+  na koordinátoru — identické chování jako klávesy.
+- **Scrubbing byl zrušen.** Původně navržené tažení myší nad kartou aktuální písně
+  a akord Mezerník + šipka se neosvědčily a byly odstraněny včetně příkazů
+  `SeekByBarsAsync` / `SeekWithinCurrentAsync`. Mezerník opět posílá play/pause
+  na stisk klávesy. Karta aktuální písně na kliknutí nereaguje.
+- Nový příkaz koordinátoru: `JumpToItemAtAsync(int index)` (zobecnění interní
+  `JumpToItemAsync`) pro two-click skok.
 - **Klik na jinou viditelnou píseň** (beze změny z původního návrhu): první klik
   kartu odjistí (akcentový rámeček), druhý klik do ~4 s provede Stop + SetPosition
   na začátek té písně. Klik jinam, Escape nebo timeout odjištění zruší. Odjištění je
