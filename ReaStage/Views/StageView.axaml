@@ -23,6 +23,13 @@
             <Setter Property="Margin" Value="0,5"/>
             <Setter Property="HorizontalAlignment" Value="Stretch"/>
             <Setter Property="BoxShadow" Value="0 3 12 0 #40000000"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <!-- Armed by the first of a two-click jump -->
+        <Style Selector="Border.songBox.armed">
+            <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Background" Value="{StaticResource SurfaceHoverBrush}"/>
         </Style>
         <Style Selector="Border.prevSong TextBlock">
             <Setter Property="FontSize" Value="22"/>
@@ -50,6 +57,27 @@
             <Setter Property="BorderBrush" Value="{StaticResource AccentDimBrush}"/>
             <Setter Property="BoxShadow" Value="0 0 42 2 #384ADE80, 0 18 48 0 #8C000000"/>
         </Style>
+
+        <!-- Bottom transport bar: dim by default, highlights on hover -->
+        <Style Selector="Button.transport">
+            <Setter Property="Width" Value="84"/>
+            <Setter Property="Height" Value="56"/>
+            <Setter Property="FontSize" Value="26"/>
+            <Setter Property="Opacity" Value="0.35"/>
+            <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource SurfaceBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Button.transport:pointerover">
+            <Setter Property="Opacity" Value="1"/>
+        </Style>
+        <Style Selector="Button.transport:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource SurfaceHoverBrush}"/>
+        </Style>
     </UserControl.Styles>
 
     <Panel>
@@ -58,18 +86,21 @@
             <!-- Previous songs, closest to the current song at the bottom -->
             <ItemsControl Grid.Row="0" ItemsSource="{Binding PreviousSongs}" VerticalAlignment="Bottom">
                 <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="x:String">
-                        <Border Classes="songBox prevSong">
-                            <TextBlock Text="{Binding}"/>
+                    <DataTemplate x:DataType="vm:StageSongItem">
+                        <Border Classes="songBox prevSong" Classes.armed="{Binding IsArmed}" Tapped="OnSongTapped">
+                            <TextBlock Text="{Binding Name}"/>
                         </Border>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <!-- Current song with progress fill -->
+            <!-- Current song with progress fill; drag horizontally to scrub -->
             <Border Grid.Row="1" x:Name="CurrentFrame"
                     Classes="currentSong"
-                    Classes.playing="{Binding IsPlaying}">
+                    Classes.playing="{Binding IsPlaying}"
+                    PointerPressed="OnScrubPressed"
+                    PointerMoved="OnScrubMoved"
+                    PointerReleased="OnScrubReleased">
                 <Panel>
                     <Border HorizontalAlignment="Left" CornerRadius="19">
                         <Border.Background>
@@ -104,14 +135,23 @@
             <!-- Upcoming songs -->
             <ItemsControl Grid.Row="2" ItemsSource="{Binding NextSongs}" VerticalAlignment="Top">
                 <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="x:String">
-                        <Border Classes="songBox nextSong">
-                            <TextBlock Text="{Binding}"/>
+                    <DataTemplate x:DataType="vm:StageSongItem">
+                        <Border Classes="songBox nextSong" Classes.armed="{Binding IsArmed}" Tapped="OnSongTapped">
+                            <TextBlock Text="{Binding Name}"/>
                         </Border>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </Grid>
+
+        <!-- Transport controls at the bottom of the window -->
+        <StackPanel Orientation="Horizontal" Spacing="20"
+                    HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                    Margin="0,0,0,18">
+            <Button Classes="transport" Content="⏮" Command="{Binding PreviousCommand}"/>
+            <Button Classes="transport" Content="⏯" Command="{Binding PlayPauseCommand}"/>
+            <Button Classes="transport" Content="⏭" Command="{Binding NextCommand}"/>
+        </StackPanel>
 
         <!-- REAPER unreachable overlay -->
         <Border Background="#E60C0B10" IsVisible="{Binding !IsReaperReachable}">

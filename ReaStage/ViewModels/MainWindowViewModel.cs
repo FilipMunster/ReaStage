@@ -18,6 +18,11 @@ public partial class MainWindowViewModel : ViewModelBase
     private KeyGesture previousGesture = null!;
     private KeyGesture nextGesture = null!;
 
+    // Play/Pause key doubles as a scrub modifier: it fires on release, unless an
+    // arrow was pressed during the hold (then it seeked instead)
+    private bool playPauseHeld;
+    private bool seekedDuringHold;
+
     public StageViewModel Stage { get; }
     public SettingsViewModel Settings { get; }
     public PlaylistSelectionViewModel PlaylistSelection { get; }
@@ -73,7 +78,7 @@ public partial class MainWindowViewModel : ViewModelBase
                 return true;
             }
 
-            return false;
+            return Stage.ClearArm();
         }
 
         // Transport keys work only on the stage page with the pane closed
@@ -82,9 +87,30 @@ public partial class MainWindowViewModel : ViewModelBase
             return false;
         }
 
+        // Play/Pause key is a modifier held down; the action fires on key-up
         if (playPauseGesture.Matches(e))
         {
-            PlayPauseCommand.Execute(null);
+            if (!playPauseHeld)
+            {
+                playPauseHeld = true;
+                seekedDuringHold = false;
+            }
+
+            return true;
+        }
+
+        // Play/Pause held + arrow = scrub by one bar (does not stop playback)
+        if (playPauseHeld && previousGesture.Matches(e))
+        {
+            seekedDuringHold = true;
+            _ = playback.SeekByBarsAsync(-1);
+            return true;
+        }
+
+        if (playPauseHeld && nextGesture.Matches(e))
+        {
+            seekedDuringHold = true;
+            _ = playback.SeekByBarsAsync(1);
             return true;
         }
 
@@ -101,6 +127,26 @@ public partial class MainWindowViewModel : ViewModelBase
         }
 
         return false;
+    }
+
+    // Play/Pause fires here, on release, for a clean tap (no seek during the hold)
+    public bool HandleKeyUp(KeyEventArgs e)
+    {
+        if (!playPauseHeld || e.Key != playPauseGesture.Key)
+        {
+            return false;
+        }
+
+        playPauseHeld = false;
+        bool cleanTap = !seekedDuringHold && CurrentPage == Stage && !IsPaneOpen;
+        seekedDuringHold = false;
+
+        if (cleanTap)
+        {
+            PlayPauseCommand.Execute(null);
+        }
+
+        return true;
     }
 
     [RelayCommand]
