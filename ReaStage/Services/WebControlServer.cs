@@ -6,6 +6,7 @@ using ReaStage.Core;
 using System;
 using System.IO;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace ReaStage.Services;
 
@@ -59,7 +60,12 @@ internal sealed class WebControlServer : IWebControlServer, IDisposable
             application.MapPost("/cmd/jump/{index:int}", async (int index) => { await coordinator.JumpToItemAtAsync(index); return Results.Ok(); });
 
             app = application;
-            _ = application.StartAsync();
+
+            // Started detached; without this the port being taken would fail silently
+            _ = application.StartAsync().ContinueWith(
+                t => logger.LogError(t.Exception, "Web control server failed to bind port {Port}", web.Port),
+                TaskContinuationOptions.OnlyOnFaulted);
+
             logger.LogInformation("Web control server listening on port {Port}", web.Port);
         }
         catch (Exception ex)
