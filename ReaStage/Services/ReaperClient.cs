@@ -29,7 +29,7 @@ internal class ReaperClient : IReaperClient, IDisposable
 
     private readonly string baseUrl;
     private readonly HttpClient httpClient;
-    private readonly OscListener oscListener;
+    private readonly UdpClient oscSocket;
     private readonly CancellationTokenSource cts = new();
     private readonly ILogger<ReaperClient> logger;
     private ReaperPosition? lastPosition;
@@ -50,7 +50,7 @@ internal class ReaperClient : IReaperClient, IDisposable
         baseUrl = $"http://{reaperSettings.Host}:{reaperSettings.HttpPort}/_/";
         httpClient = new HttpClient();
         IPEndPoint endpoint = new IPEndPoint(IPAddress.Any, reaperSettings.OscPort);
-        oscListener = new OscListener(endpoint);
+        oscSocket = new UdpClient(endpoint);
 
         _ = ListenOscAsync(cts.Token);
     }
@@ -152,8 +152,8 @@ internal class ReaperClient : IReaperClient, IDisposable
         {
             try
             {
-                OscBundle bundle = await oscListener.ReceiveBundleAsync(ct);
-                await HandleOscBundle(bundle);
+                UdpReceiveResult received = await oscSocket.ReceiveAsync(ct);
+                await HandleOscPacket(received.Buffer);
             }
             catch (OperationCanceledException) { break; }
             catch (Exception ex)
@@ -163,12 +163,27 @@ internal class ReaperClient : IReaperClient, IDisposable
         }
     }
 
-    private async Task HandleOscBundle(OscBundle bundle)
+    // REAPER groups simultaneous feedback into a bundle but sends a lone value as a
+    // bare message. Listening for bundles only silently dropped those — among them
+    // /tempo/raw, which is why no BPM ever arrived.
+    private async Task HandleOscPacket(byte[] packet)
+    {
+        await HandleOscMessages(ParseOscPacket(packet));
+    }
+
+    internal static IReadOnlyList<OscMessage> ParseOscPacket(byte[] packet)
+    {
+        return OscBundle.IsBundle(packet)
+            ? OscBundle.ParseBundle(packet).Messages
+            : [OscMessage.ParseMessage(packet)];
+    }
+
+    private async Task HandleOscMessages(IReadOnlyList<OscMessage> messages)
     {
         ReaperPosition lastPosition = this.lastPosition ?? await GetPosition();
         ReaperPosition currentPosition = lastPosition;
 
-        foreach (var msg in bundle.Messages)
+        foreach (var msg in messages)
         {
             HandleOscMessage(msg, ref currentPosition);
         }
@@ -339,7 +354,7 @@ internal class ReaperClient : IReaperClient, IDisposable
                 httpClient.Dispose();
                 cts.Cancel();
                 cts.Dispose();
-                oscListener.Dispose();
+                oscSocket.Dispose();
             }
 
             disposedValue = true;
