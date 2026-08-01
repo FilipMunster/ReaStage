@@ -40,6 +40,10 @@ public partial class App : Application
             var windowFactory = serviceProvider.GetRequiredService<WindowFactory>();
             desktop.MainWindow = windowFactory.Create<MainWindow, MainWindowViewModel>();
             desktop.MainWindow.Show();
+
+            var webServer = serviceProvider.GetRequiredService<IWebControlServer>();
+            webServer.Start();
+            desktop.ShutdownRequested += (_, _) => webServer.Stop();
         }
 
         base.OnFrameworkInitializationCompleted();
@@ -61,6 +65,7 @@ public partial class App : Application
             .AddSingleton<IRegionCatalog, RegionCatalog>()
             .AddSingleton<IPlaylistService, PlaylistService>()
             .AddSingleton<IPlaybackCoordinator, PlaybackCoordinator>()
+            .AddSingleton<IWebControlServer, WebControlServer>()
             .AddSingleton<StageViewModel>()
             .AddSingleton<SettingsViewModel>()
             .AddSingleton<PlaylistSelectionViewModel>()

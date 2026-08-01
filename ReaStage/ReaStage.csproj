@@ -10,6 +10,11 @@
   <ItemGroup>
     <Folder Include="Models\" />
     <AvaloniaResource Include="Assets\**" />
+    <EmbeddedResource Include="Web\index.html" LogicalName="ReaStage.Web.index.html" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,9 +36,8 @@
     </PackageReference>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageReference Include="LucHeart.CoreOSC" Version="1.6.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.7" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.7" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.7" />
+    <!-- Microsoft.Extensions.* (Configuration, DI, Logging) come from the
+         Microsoft.AspNetCore.App framework reference used by the web server -->
     <PackageReference Include="NLog" Version="6.1.3" />
     <PackageReference Include="NLog.Config" Version="4.7.15" />
     <PackageReference Include="NLog.Extensions.Logging" Version="6.1.3" />

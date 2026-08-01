@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>ReaStage</title>
+<style>
+  :root {
+    --surface: #0DFFFFFF;
+    --surface-hover: #1FFFFFFF;
+    --border: #17FFFFFF;
+    --text: #F5F5F7;
+    --text-dim: #9AA1AD;
+    --accent: #4ADE80;
+    --danger: #FF6B6B;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; height: 100%; overflow: hidden;
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: var(--text);
+    background: linear-gradient(135deg, #12131C 0%, #0C0D13 55%, #141020 100%);
+    background-attachment: fixed;
+    user-select: none; -webkit-user-select: none;
+  }
+  #status {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 5;
+    display: flex; justify-content: space-between; gap: 10px;
+    padding: 10px 16px;
+    font-size: 14px; color: var(--text-dim);
+    background: rgba(12, 13, 19, 0.85);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(8px);
+  }
+  #list {
+    height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch;
+    padding: 64px 14px 40vh 14px;
+  }
+  .song {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 16px;
+    margin: 10px 0; padding: 20px 18px;
+    text-align: center;
+    font-size: 22px; color: var(--text);
+    opacity: 0.5;
+    overflow: hidden; position: relative;
+    white-space: nowrap; text-overflow: ellipsis;
+  }
+  .song .name { position: relative; z-index: 1; }
+  .song.current {
+    opacity: 1;
+    min-height: 120px;
+    display: flex; flex-direction: column; justify-content: center;
+    font-size: 34px; font-weight: 700;
+    border-color: #33FFFFFF;
+    background: #C8171924;
+  }
+  .song.current.playing { border-color: var(--accent); box-shadow: 0 0 32px 1px #384ADE80; }
+  .song.armed { border-color: var(--accent); border-width: 2px; background: var(--surface-hover); opacity: 1; }
+  .fill {
+    position: absolute; left: 0; top: 0; bottom: 0; width: 0;
+    background: linear-gradient(90deg, #1A4ADE80, #454ADE80);
+    z-index: 0;
+  }
+  .times {
+    display: flex; justify-content: space-between;
+    margin-top: 12px; font-size: 15px; font-weight: 500; color: var(--text-dim);
+    z-index: 1; position: relative;
+  }
+  .times .beats { font-size: 12px; opacity: 0.8; }
+  #offline {
+    position: fixed; inset: 0; z-index: 10; display: none;
+    align-items: center; justify-content: center;
+    background: rgba(12, 11, 16, 0.9);
+    color: var(--danger); font-size: 28px; font-weight: 700;
+  }
+</style>
+</head>
+<body>
+  <div id="status">
+    <span><span id="order">–</span> &nbsp; <span id="bpm"></span></span>
+    <span><span id="rem-playlist"></span> &nbsp; <span id="end"></span></span>
+  </div>
+  <div id="list"></div>
+  <div id="offline">REAPER nedostupný</div>
+
+<script>
+(function () {
+  "use strict";
+  var list = document.getElementById("list");
+  var current = -1, armed = null, armTimer = null;
+  var lastSig = "", lastCurrent = -1;
+  var userScrolling = false, scrollIdle = null;
+
+  function post(path) {
+    fetch("/cmd/" + path, { method: "POST" }).catch(function () {}).then(poll);
+  }
+
+  function centerCurrent() {
+    var el = list.querySelector(".song.current");
+    if (el) { el.scrollIntoView({ block: "center", behavior: "smooth" }); }
+  }
+
+  function applyArmed() {
+    var boxes = list.children;
+    for (var i = 0; i < boxes.length; i++) {
+      boxes[i].classList.toggle("armed", i === armed);
+    }
+  }
+
+  function onTap(x, y) {
+    var el = document.elementFromPoint(x, y);
+    var box = el && el.closest(".song");
+    if (!box) { return; }
+    var idx = parseInt(box.dataset.index, 10);
+
+    if (idx === current) { armed = null; applyArmed(); post("playpause"); return; }
+
+    if (armed === idx) {
+      var target = idx; armed = null; applyArmed();
+      clearTimeout(armTimer);
+      post("jump/" + target);
+    } else {
+      armed = idx; applyArmed();
+      clearTimeout(armTimer);
+      armTimer = setTimeout(function () { armed = null; applyArmed(); }, 4000);
+    }
+  }
+
+  function buildList(songs) {
+    list.innerHTML = "";
+    for (var i = 0; i < songs.length; i++) {
+      var box = document.createElement("div");
+      box.className = "song";
+      box.dataset.index = i;
+      var fill = document.createElement("div"); fill.className = "fill";
+      var name = document.createElement("div"); name.className = "name"; name.textContent = songs[i].name;
+      var times = document.createElement("div"); times.className = "times";
+      times.innerHTML = '<span><span class="clock left"></span> <span class="beats left"></span></span>' +
+                        '<span><span class="clock right"></span> <span class="beats right"></span></span>';
+      box.appendChild(fill); box.appendChild(name); box.appendChild(times);
+      list.appendChild(box);
+    }
+  }
+
+  function render(s) {
+    document.getElementById("offline").style.display = s.reaperReachable ? "none" : "flex";
+    document.getElementById("order").textContent = s.order;
+    document.getElementById("bpm").textContent = s.bpm;
+    document.getElementById("rem-playlist").textContent = s.remainingPlaylist;
+    document.getElementById("end").textContent = s.endEstimate;
+
+    var sig = s.songs.length + "#" + s.songs.map(function (x) { return x.name; }).join("|");
+    if (sig !== lastSig) { buildList(s.songs); lastSig = sig; lastCurrent = -1; }
+
+    current = s.currentIndex;
+    var boxes = list.children;
+    for (var i = 0; i < boxes.length; i++) {
+      var box = boxes[i];
+      var isCurrent = i === current;
+      box.classList.toggle("current", isCurrent);
+      box.classList.toggle("playing", isCurrent && s.isPlaying);
+      var fill = box.querySelector(".fill");
+      fill.style.width = isCurrent ? (s.progress * 100) + "%" : "0";
+      if (isCurrent) {
+        box.querySelector(".clock.left").textContent = s.elapsed;
+        box.querySelector(".beats.left").textContent = s.elapsedBeats;
+        box.querySelector(".clock.right").textContent = s.remaining;
+        box.querySelector(".beats.right").textContent = s.remainingBeats;
+      }
+    }
+    applyArmed();
+
+    if (current !== lastCurrent && !userScrolling) { lastCurrent = current; centerCurrent(); }
+  }
+
+  function poll() {
+    fetch("/state").then(function (r) { return r.json(); }).then(render).catch(function () {
+      document.getElementById("offline").style.display = "flex";
+    });
+  }
+
+  // Gestures: tap, and horizontal swipe for prev/next; vertical is native scroll
+  var sx = 0, sy = 0, st = 0;
+  list.addEventListener("touchstart", function (e) {
+    var t = e.touches[0]; sx = t.clientX; sy = t.clientY; st = Date.now();
+  }, { passive: true });
+  list.addEventListener("touchend", function (e) {
+    var t = e.changedTouches[0];
+    var dx = t.clientX - sx, dy = t.clientY - sy, dt = Date.now() - st;
+    if (Math.abs(dx) < 12 && Math.abs(dy) < 12 && dt < 500) {
+      e.preventDefault(); // suppress the synthesized click
+      onTap(t.clientX, t.clientY);
+      return;
+    }
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
+      post(dx > 0 ? "prev" : "next");
+    }
+  });
+  list.addEventListener("click", function (e) { onTap(e.clientX, e.clientY); });
+  list.addEventListener("scroll", function () {
+    userScrolling = true;
+    clearTimeout(scrollIdle);
+    scrollIdle = setTimeout(function () { userScrolling = false; centerCurrent(); }, 2500);
+  }, { passive: true });
+
+  poll();
+  setInterval(poll, 200);
+})();
+</script>
+</body>
+</html>
