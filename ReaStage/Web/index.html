@@ -5,13 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>ReaStage</title>
 <style>
+  /* Palette mirrors App.axaml. Avalonia writes #AARRGGBB, CSS reads #RRGGBBAA —
+     the alpha byte moves to the end. */
   :root {
-    --surface: #0DFFFFFF;
-    --surface-hover: #1FFFFFFF;
-    --border: #17FFFFFF;
+    --surface: #FFFFFF0D;
+    --surface-hover: #FFFFFF1F;
+    --border: #FFFFFF17;
     --text: #F5F5F7;
     --text-dim: #9AA1AD;
     --accent: #4ADE80;
+    --accent-dim: #4ADE8080;
+    --current-bg: #171924C8;
     --danger: #FF6B6B;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -25,16 +29,18 @@
   }
   #status {
     position: fixed; top: 0; left: 0; right: 0; z-index: 5;
-    display: flex; justify-content: space-between; gap: 10px;
-    padding: 10px 16px;
-    font-size: 14px; color: var(--text-dim);
-    background: rgba(12, 13, 19, 0.85);
+    display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
+    padding: 9px 14px;
+    background: #151721F0;
     border-bottom: 1px solid var(--border);
     backdrop-filter: blur(8px);
   }
+  #status .group { display: flex; align-items: baseline; gap: 7px; }
+  #status .value { font-size: 23px; font-weight: 600; color: var(--text); }
+  #status .caption { font-size: 12px; color: var(--text-dim); }
   #list {
     height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch;
-    padding: 64px 14px 40vh 14px;
+    padding: 62px 14px 40vh 14px;
   }
   .song {
     border: 1px solid var(--border);
@@ -50,25 +56,25 @@
   .song .name { position: relative; z-index: 1; }
   .song.current {
     opacity: 1;
-    min-height: 120px;
+    min-height: 150px;
     display: flex; flex-direction: column; justify-content: center;
     font-size: 34px; font-weight: 700;
-    border-color: #33FFFFFF;
-    background: #C8171924;
+    border-color: #FFFFFF33;
+    background: var(--current-bg);
   }
-  .song.current.playing { border-color: var(--accent); box-shadow: 0 0 32px 1px #384ADE80; }
+  .song.current.playing { border-color: var(--accent-dim); box-shadow: 0 0 32px 1px #4ADE8038; }
   .song.armed { border-color: var(--accent); border-width: 2px; background: var(--surface-hover); opacity: 1; }
   .fill {
     position: absolute; left: 0; top: 0; bottom: 0; width: 0;
-    background: linear-gradient(90deg, #1A4ADE80, #454ADE80);
+    background: linear-gradient(90deg, #4ADE801A, #4ADE8045);
     z-index: 0;
   }
   .times {
-    display: flex; justify-content: space-between;
-    margin-top: 12px; font-size: 15px; font-weight: 500; color: var(--text-dim);
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-top: 14px; font-size: 26px; font-weight: 600; color: var(--text);
     z-index: 1; position: relative;
   }
-  .times .beats { font-size: 12px; opacity: 0.8; }
+  .times .beats { font-size: 17px; font-weight: 500; color: var(--text-dim); }
   #offline {
     position: fixed; inset: 0; z-index: 10; display: none;
     align-items: center; justify-content: center;
@@ -79,8 +85,14 @@
 </head>
 <body>
   <div id="status">
-    <span><span id="order">–</span> &nbsp; <span id="bpm"></span></span>
-    <span><span id="rem-playlist"></span> &nbsp; <span id="end"></span></span>
+    <span class="group">
+      <span class="value" id="order">–</span>
+      <span class="value" id="bpm"></span>
+    </span>
+    <span class="group">
+      <span class="caption">zbývá</span><span class="value" id="rem-playlist"></span>
+      <span class="caption">konec</span><span class="value" id="end"></span>
+    </span>
   </div>
   <div id="list"></div>
   <div id="offline">REAPER nedostupný</div>
