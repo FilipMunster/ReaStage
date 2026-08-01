@@ -200,7 +200,7 @@ public partial class StageViewModel : ViewModelBase
         BpmText = StageStats.FormatBpm(position.TempoBpm);
         OrderText = StageStats.OrderText(index, items.Count);
         remainingPlaylistSeconds = StageStats.RemainingPlaylistSeconds(items, index, position.PositionSeconds);
-        RemainingPlaylistText = "zbývá " + StageStats.FormatClock(remainingPlaylistSeconds);
+        RemainingPlaylistText = StageStats.FormatClock(remainingPlaylistSeconds);
         UpdateEndEstimate();
 
         // A rebuild replaces the item instances, so re-apply (or drop) the armed state
@@ -239,7 +239,7 @@ public partial class StageViewModel : ViewModelBase
 
     private void UpdateEndEstimate()
     {
-        EndEstimateText = "konec " + StageStats.FormatEndEstimate(DateTime.Now, remainingPlaylistSeconds);
+        EndEstimateText = StageStats.FormatEndEstimate(DateTime.Now, remainingPlaylistSeconds);
     }
 
     private static IReadOnlyList<StageSongItem> BuildItems(IReadOnlyList<ResolvedPlaylistItem> items, int start, int count)

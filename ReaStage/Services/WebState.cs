@@ -76,7 +76,7 @@ public static class WebStateBuilder
             ElapsedBeats: elapsedBeats,
             Remaining: remaining,
             RemainingBeats: remainingBeats,
-            RemainingPlaylist: "zbývá " + StageStats.FormatClock(remainingPlaylistSeconds),
-            EndEstimate: "konec " + StageStats.FormatEndEstimate(now, remainingPlaylistSeconds));
+            RemainingPlaylist: StageStats.FormatClock(remainingPlaylistSeconds),
+            EndEstimate: StageStats.FormatEndEstimate(now, remainingPlaylistSeconds));
     }
 }

@@ -33,8 +33,8 @@ public class WebStateBuilderTests
         Assert.Equal("21.1", state.ElapsedBeats);
         Assert.Equal("−0:50", state.Remaining);
         // 50 s left of Two + 90 s of Three = 2:20
-        Assert.Equal("zbývá 2:20", state.RemainingPlaylist);
-        Assert.Equal("konec 20:02", state.EndEstimate);
+        Assert.Equal("2:20", state.RemainingPlaylist);
+        Assert.Equal("20:02", state.EndEstimate);
     }
 
     [Fact]
@@ -46,6 +46,6 @@ public class WebStateBuilderTests
         Assert.Equal(0, state.Progress);
         Assert.Equal(string.Empty, state.Elapsed);
         Assert.Equal("– / 3", state.Order);
-        Assert.Equal("zbývá 3:00", state.RemainingPlaylist);
+        Assert.Equal("3:00", state.RemainingPlaylist);
     }
 }
