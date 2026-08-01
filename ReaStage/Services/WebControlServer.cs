@@ -16,6 +16,9 @@ internal sealed class WebControlServer : IWebControlServer, IDisposable
 {
     private const string IndexResource = "ReaStage.Web.index.html";
 
+    // Closing the app must not hang on a stuck server
+    private static readonly TimeSpan ShutdownTimeout = TimeSpan.FromSeconds(5);
+
     private readonly IPlaybackCoordinator coordinator;
     private readonly IRegionCatalog regionCatalog;
     private readonly ISettingsService settingsService;
@@ -84,8 +87,15 @@ internal sealed class WebControlServer : IWebControlServer, IDisposable
 
         try
         {
-            app.StopAsync().GetAwaiter().GetResult();
-            app.DisposeAsync().AsTask().GetAwaiter().GetResult();
+            // Stop() runs on the UI thread during shutdown; awaiting Kestrel directly
+            // would post continuations back to that blocked thread and deadlock, so the
+            // shutdown runs off the UI context with a bounded wait
+            WebApplication stopping = app;
+            Task.Run(async () =>
+            {
+                await stopping.StopAsync();
+                await stopping.DisposeAsync();
+            }).Wait(ShutdownTimeout);
         }
         catch (Exception ex)
         {
