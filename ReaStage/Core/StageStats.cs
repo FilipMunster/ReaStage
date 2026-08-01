@@ -25,8 +25,21 @@ public static class StageStats
             : $"{minutes}:{secs:00}";
     }
 
-    // "bar.beat" (1-based) for a duration, assuming constant tempo; null without tempo
-    public static string? FormatBarBeat(double seconds, double tempo, int tsNumerator, int tsDenominator)
+    // Position inside a song as "bar.beat", 1-based like REAPER's own readout
+    public static string? FormatBarBeatPosition(double seconds, double tempo, int tsNumerator, int tsDenominator)
+    {
+        return FormatBarBeat(seconds, tempo, tsNumerator, tsDenominator, firstIndex: 1);
+    }
+
+    // Length of a stretch of music: whole bars and beats counted from zero, so two
+    // bars left reads "2.0" and not "3.1"
+    public static string? FormatBarBeatDuration(double seconds, double tempo, int tsNumerator, int tsDenominator)
+    {
+        return FormatBarBeat(seconds, tempo, tsNumerator, tsDenominator, firstIndex: 0);
+    }
+
+    // Assumes constant tempo; null when the tempo is not known yet
+    private static string? FormatBarBeat(double seconds, double tempo, int tsNumerator, int tsDenominator, int firstIndex)
     {
         if (tempo <= 0 || tsNumerator <= 0 || tsDenominator <= 0)
         {
@@ -43,7 +56,7 @@ public static class StageStats
         int bar = (int)(totalBeats / tsNumerator);
         int beat = (int)(totalBeats - bar * tsNumerator);
 
-        return $"{bar + 1}.{beat + 1}";
+        return $"{bar + firstIndex}.{beat + firstIndex}";
     }
 
     public static string FormatBpm(double tempo)

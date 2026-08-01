@@ -56,8 +56,8 @@ public static class WebStateBuilder
             elapsed = StageStats.FormatClock(elapsedSeconds);
             remaining = "−" + StageStats.FormatClock(remainingSeconds);
 
-            string? eb = StageStats.FormatBarBeat(elapsedSeconds, position.TempoBpm, position.TimeSigNumerator, position.TimeSigDenominator);
-            string? rb = StageStats.FormatBarBeat(remainingSeconds, position.TempoBpm, position.TimeSigNumerator, position.TimeSigDenominator);
+            string? eb = StageStats.FormatBarBeatPosition(elapsedSeconds, position.TempoBpm, position.TimeSigNumerator, position.TimeSigDenominator);
+            string? rb = StageStats.FormatBarBeatDuration(remainingSeconds, position.TempoBpm, position.TimeSigNumerator, position.TimeSigDenominator);
             elapsedBeats = eb ?? string.Empty;
             remainingBeats = rb is null ? string.Empty : "−" + rb;
         }

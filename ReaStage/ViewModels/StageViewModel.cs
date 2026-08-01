@@ -223,8 +223,8 @@ public partial class StageViewModel : ViewModelBase
         ElapsedText = StageStats.FormatClock(elapsed);
         RemainingText = "−" + StageStats.FormatClock(remaining);
 
-        string? elapsedBeats = StageStats.FormatBarBeat(elapsed, position.TempoBpm, position.TimeSigNumerator, position.TimeSigDenominator);
-        string? remainingBeats = StageStats.FormatBarBeat(remaining, position.TempoBpm, position.TimeSigNumerator, position.TimeSigDenominator);
+        string? elapsedBeats = StageStats.FormatBarBeatPosition(elapsed, position.TempoBpm, position.TimeSigNumerator, position.TimeSigDenominator);
+        string? remainingBeats = StageStats.FormatBarBeatDuration(remaining, position.TempoBpm, position.TimeSigNumerator, position.TimeSigDenominator);
         ElapsedBeatsText = elapsedBeats ?? string.Empty;
         RemainingBeatsText = remainingBeats is null ? string.Empty : "−" + remainingBeats;
     }
