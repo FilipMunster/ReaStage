@@ -70,6 +70,10 @@ public partial class StageViewModel : ViewModelBase
     [ObservableProperty]
     private bool isReaperReachable;
 
+    // Font size multiplier for the stage view, applied via FontScaleConverter
+    [ObservableProperty]
+    private double fontScale = 1.0;
+
     private double remainingPlaylistSeconds;
 
     public StageViewModel(
@@ -91,7 +95,21 @@ public partial class StageViewModel : ViewModelBase
 
         playback.StateChanged += (_, _) => Dispatcher.UIThread.Post(Update);
         regionCatalog.ReachabilityChanged += (_, _) => Dispatcher.UIThread.Post(Update);
+        settingsService.SettingsSaved += (_, _) => Dispatcher.UIThread.Post(OnSettingsSaved);
+
+        UpdateFontScale();
         Update();
+    }
+
+    private void OnSettingsSaved()
+    {
+        UpdateFontScale();
+        Update();
+    }
+
+    private void UpdateFontScale()
+    {
+        FontScale = Math.Clamp(settingsService.Settings.FontScalePercent, 50, 200) / 100.0;
     }
 
     [RelayCommand]

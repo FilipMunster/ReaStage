@@ -72,6 +72,11 @@ public partial class MainWindowViewModel : ViewModelBase
                 return true;
             }
 
+            if (CurrentPage == Settings && Settings.CancelCaptureIfActive())
+            {
+                return true;
+            }
+
             if (CurrentPage != Stage)
             {
                 ShowStage();

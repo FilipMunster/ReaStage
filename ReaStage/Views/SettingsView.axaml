@@ -35,6 +35,16 @@
             <Setter Property="HorizontalAlignment" Value="Left"/>
             <Setter Property="Margin" Value="0,3"/>
         </Style>
+        <Style Selector="Button.keyCapture">
+            <Setter Property="Width" Value="220"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Margin" Value="0,3"/>
+            <Setter Property="Padding" Value="12,7"/>
+            <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource SurfaceBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
     </UserControl.Styles>
 
     <ScrollViewer>
@@ -46,25 +56,41 @@
                     <TextBlock Classes="section" Text="KLÁVESY"/>
                     <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto">
                         <TextBlock Grid.Row="0" Classes="label" Text="Play / Pauza"/>
-                        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding PlayPauseKey}"/>
+                        <Button Grid.Row="0" Grid.Column="1" Classes="keyCapture"
+                                Content="{Binding PlayPauseKeyDisplay}"
+                                Command="{Binding StartCaptureCommand}" CommandParameter="PlayPause"/>
                         <TextBlock Grid.Row="1" Classes="label" Text="Předchozí píseň"/>
-                        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding PreviousKey}"/>
+                        <Button Grid.Row="1" Grid.Column="1" Classes="keyCapture"
+                                Content="{Binding PreviousKeyDisplay}"
+                                Command="{Binding StartCaptureCommand}" CommandParameter="Previous"/>
                         <TextBlock Grid.Row="2" Classes="label" Text="Další píseň"/>
-                        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding NextKey}"/>
+                        <Button Grid.Row="2" Grid.Column="1" Classes="keyCapture"
+                                Content="{Binding NextKeyDisplay}"
+                                Command="{Binding StartCaptureCommand}" CommandParameter="Next"/>
                     </Grid>
+                    <TextBlock Text="Klikni na tlačítko a stiskni klávesu; Esc zruší."
+                               Foreground="{StaticResource TextSecondaryBrush}" FontStyle="Italic" Margin="0,10,0,0"/>
                 </StackPanel>
             </Border>
 
             <Border Classes="card">
                 <StackPanel>
                     <TextBlock Classes="section" Text="ZOBRAZENÍ"/>
-                    <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto">
+                    <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto,Auto">
                         <TextBlock Grid.Row="0" Classes="label" Text="Předchozích písní"/>
                         <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding PreviousSongsShown}"/>
                         <TextBlock Grid.Row="1" Classes="label" Text="Následujících písní"/>
                         <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding NextSongsShown}"/>
                         <TextBlock Grid.Row="2" Classes="label" Text="Práh šipky zpět (s)"/>
                         <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding PreviousThresholdSeconds}"/>
+                        <TextBlock Grid.Row="3" Classes="label" Text="Velikost písma (%)"/>
+                        <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal" Spacing="12">
+                            <Slider Width="220" Minimum="50" Maximum="200"
+                                    TickFrequency="10" IsSnapToTickEnabled="True"
+                                    Value="{Binding FontScalePercent}" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding FontScalePercent, StringFormat={}{0:0} %}"
+                                       Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                        </StackPanel>
                     </Grid>
                 </StackPanel>
             </Border>
@@ -83,6 +109,20 @@
                         <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding RegionsPollSeconds}"/>
                     </Grid>
                     <TextBlock Text="Změna hostu a portů se projeví až po restartu aplikace."
+                               Foreground="{StaticResource TextSecondaryBrush}" FontStyle="Italic" Margin="0,10,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <Border Classes="card">
+                <StackPanel>
+                    <TextBlock Classes="section" Text="WEBOVÉ OVLÁDÁNÍ"/>
+                    <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto">
+                        <TextBlock Grid.Row="0" Classes="label" Text="Povolit web"/>
+                        <ToggleSwitch Grid.Row="0" Grid.Column="1" IsChecked="{Binding WebEnabled}"/>
+                        <TextBlock Grid.Row="1" Classes="label" Text="Port webu"/>
+                        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding WebPort}"/>
+                    </Grid>
+                    <TextBlock Text="Změna se projeví až po restartu aplikace. Web běží bez hesla, jen pro LAN."
                                Foreground="{StaticResource TextSecondaryBrush}" FontStyle="Italic" Margin="0,10,0,0"/>
                 </StackPanel>
             </Border>

@@ -6,11 +6,13 @@
              xmlns:conv="using:ReaStage.Converters"
              mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="720"
              x:Class="ReaStage.Views.StageView"
+             x:Name="StageRoot"
              x:DataType="vm:StageViewModel"
              Background="Transparent">
 
     <UserControl.Resources>
         <conv:ProgressWidthConverter x:Key="ProgressWidth"/>
+        <conv:FontScaleConverter x:Key="FontScale"/>
     </UserControl.Resources>
 
     <UserControl.Styles>
@@ -32,14 +34,12 @@
             <Setter Property="Background" Value="{StaticResource SurfaceHoverBrush}"/>
         </Style>
         <Style Selector="Border.prevSong TextBlock">
-            <Setter Property="FontSize" Value="22"/>
             <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
             <Setter Property="Opacity" Value="0.38"/>
             <Setter Property="TextAlignment" Value="Center"/>
             <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
         </Style>
         <Style Selector="Border.nextSong TextBlock">
-            <Setter Property="FontSize" Value="32"/>
             <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
             <Setter Property="Opacity" Value="0.85"/>
             <Setter Property="TextAlignment" Value="Center"/>
@@ -55,16 +55,13 @@
             <Setter Property="BoxShadow" Value="0 18 48 0 #8C000000"/>
         </Style>
         <Style Selector="TextBlock.timePrimary">
-            <Setter Property="FontSize" Value="24"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
         </Style>
         <Style Selector="TextBlock.timeSecondary">
-            <Setter Property="FontSize" Value="16"/>
             <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
         </Style>
         <Style Selector="TextBlock.statText">
-            <Setter Property="FontSize" Value="16"/>
             <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
@@ -103,7 +100,8 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:StageSongItem">
                         <Border Classes="songBox prevSong" Classes.armed="{Binding IsArmed}" Tapped="OnSongTapped">
-                            <TextBlock Text="{Binding Name}"/>
+                            <TextBlock Text="{Binding Name}"
+                                       FontSize="{Binding #StageRoot.((vm:StageViewModel)DataContext).FontScale, Converter={StaticResource FontScale}, ConverterParameter=22}"/>
                         </Border>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
@@ -137,19 +135,24 @@
                         </Border.Width>
                     </Border>
                     <TextBlock Text="{Binding CurrentSongName}"
-                               FontSize="58" FontWeight="Bold" Foreground="#FFFFFF"
+                               FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=58}"
+                               FontWeight="Bold" Foreground="#FFFFFF"
                                TextAlignment="Center" TextTrimming="CharacterEllipsis"
                                HorizontalAlignment="Center" VerticalAlignment="Center" Margin="28,28"/>
 
                     <!-- Elapsed (left) and remaining (right), mm:ss over bar.beat -->
                     <Grid ColumnDefinitions="*,*" VerticalAlignment="Bottom" Margin="28,0,28,16">
                         <StackPanel Grid.Column="0" HorizontalAlignment="Left">
-                            <TextBlock Text="{Binding ElapsedText}" Classes="timePrimary"/>
-                            <TextBlock Text="{Binding ElapsedBeatsText}" Classes="timeSecondary"/>
+                            <TextBlock Text="{Binding ElapsedText}" Classes="timePrimary"
+                                       FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=24}"/>
+                            <TextBlock Text="{Binding ElapsedBeatsText}" Classes="timeSecondary"
+                                       FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=16}"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1" HorizontalAlignment="Right">
-                            <TextBlock Text="{Binding RemainingText}" Classes="timePrimary" TextAlignment="Right"/>
-                            <TextBlock Text="{Binding RemainingBeatsText}" Classes="timeSecondary" TextAlignment="Right"/>
+                            <TextBlock Text="{Binding RemainingText}" Classes="timePrimary" TextAlignment="Right"
+                                       FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=24}"/>
+                            <TextBlock Text="{Binding RemainingBeatsText}" Classes="timeSecondary" TextAlignment="Right"
+                                       FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=16}"/>
                         </StackPanel>
                     </Grid>
                 </Panel>
@@ -160,7 +163,8 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:StageSongItem">
                         <Border Classes="songBox nextSong" Classes.armed="{Binding IsArmed}" Tapped="OnSongTapped">
-                            <TextBlock Text="{Binding Name}"/>
+                            <TextBlock Text="{Binding Name}"
+                                       FontSize="{Binding #StageRoot.((vm:StageViewModel)DataContext).FontScale, Converter={StaticResource FontScale}, ConverterParameter=32}"/>
                         </Border>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
@@ -171,8 +175,10 @@
         <Grid VerticalAlignment="Bottom" Margin="24,0,24,16" ColumnDefinitions="*,Auto,*">
             <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="18"
                         VerticalAlignment="Center" HorizontalAlignment="Left">
-                <TextBlock Text="{Binding OrderText}" Classes="statText"/>
-                <TextBlock Text="{Binding BpmText}" Classes="statText"/>
+                <TextBlock Text="{Binding OrderText}" Classes="statText"
+                           FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=16}"/>
+                <TextBlock Text="{Binding BpmText}" Classes="statText"
+                           FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=16}"/>
             </StackPanel>
 
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="20" VerticalAlignment="Center">
@@ -183,8 +189,10 @@
 
             <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="18"
                         VerticalAlignment="Center" HorizontalAlignment="Right">
-                <TextBlock Text="{Binding RemainingPlaylistText}" Classes="statText"/>
-                <TextBlock Text="{Binding EndEstimateText}" Classes="statText"/>
+                <TextBlock Text="{Binding RemainingPlaylistText}" Classes="statText"
+                           FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=16}"/>
+                <TextBlock Text="{Binding EndEstimateText}" Classes="statText"
+                           FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=16}"/>
             </StackPanel>
         </Grid>
 

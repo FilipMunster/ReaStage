@@ -10,18 +10,43 @@ namespace ReaStage.ViewModels;
 
 public partial class SettingsViewModel : ViewModelBase
 {
+    private const string FieldPlayPause = "PlayPause";
+    private const string FieldPrevious = "Previous";
+    private const string FieldNext = "Next";
+    private const string CapturePrompt = "Stiskni klávesu…";
+
     private readonly ISettingsService settingsService;
 
     public event EventHandler? Closed;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PlayPauseKeyDisplay))]
     private string playPauseKey = string.Empty;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PreviousKeyDisplay))]
     private string previousKey = string.Empty;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(NextKeyDisplay))]
     private string nextKey = string.Empty;
+
+    // Which key field is currently in "press a key" capture mode ("" = none)
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsCapturing))]
+    [NotifyPropertyChangedFor(nameof(PlayPauseKeyDisplay))]
+    [NotifyPropertyChangedFor(nameof(PreviousKeyDisplay))]
+    [NotifyPropertyChangedFor(nameof(NextKeyDisplay))]
+    private string capturingField = string.Empty;
+
+    [ObservableProperty]
+    private double fontScalePercent = 100;
+
+    [ObservableProperty]
+    private bool webEnabled;
+
+    [ObservableProperty]
+    private string webPort = string.Empty;
 
     [ObservableProperty]
     private string previousSongsShown = string.Empty;
@@ -52,11 +77,78 @@ public partial class SettingsViewModel : ViewModelBase
         this.settingsService = settingsService;
     }
 
+    public bool IsCapturing => CapturingField.Length > 0;
+
+    public string PlayPauseKeyDisplay => CapturingField == FieldPlayPause ? CapturePrompt : PlayPauseKey;
+
+    public string PreviousKeyDisplay => CapturingField == FieldPrevious ? CapturePrompt : PreviousKey;
+
+    public string NextKeyDisplay => CapturingField == FieldNext ? CapturePrompt : NextKey;
+
+    [RelayCommand]
+    private void StartCapture(string field)
+    {
+        CapturingField = field;
+        ErrorMessage = string.Empty;
+    }
+
+    // Called by the view on Escape; returns true if a capture was in progress
+    public bool CancelCaptureIfActive()
+    {
+        if (!IsCapturing)
+        {
+            return false;
+        }
+
+        CapturingField = string.Empty;
+        return true;
+    }
+
+    // Called by the view when a key is pressed during capture
+    public void ApplyCapturedKey(KeyGesture gesture)
+    {
+        if (!IsCapturing)
+        {
+            return;
+        }
+
+        string field = CapturingField;
+        string text = gesture.ToString();
+
+        // Reject assigning the same key to two actions
+        bool duplicate = (field != FieldPlayPause && PlayPauseKey == text)
+            || (field != FieldPrevious && PreviousKey == text)
+            || (field != FieldNext && NextKey == text);
+        if (duplicate)
+        {
+            ErrorMessage = $"Klávesa '{text}' je už přiřazena jiné akci.";
+            CapturingField = string.Empty;
+            return;
+        }
+
+        switch (field)
+        {
+            case FieldPlayPause:
+                PlayPauseKey = text;
+                break;
+            case FieldPrevious:
+                PreviousKey = text;
+                break;
+            case FieldNext:
+                NextKey = text;
+                break;
+        }
+
+        ErrorMessage = string.Empty;
+        CapturingField = string.Empty;
+    }
+
     // Called every time the settings page is shown
     public void Load()
     {
         AppSettings settings = settingsService.Settings;
 
+        CapturingField = string.Empty;
         PlayPauseKey = settings.Keys.PlayPause;
         PreviousKey = settings.Keys.Previous;
         NextKey = settings.Keys.Next;
@@ -64,6 +156,9 @@ public partial class SettingsViewModel : ViewModelBase
         NextSongsShown = settings.NextSongsShown.ToString(CultureInfo.InvariantCulture);
         PreviousThresholdSeconds = settings.PreviousThresholdSeconds.ToString(CultureInfo.InvariantCulture);
         RegionsPollSeconds = settings.RegionsPollSeconds.ToString(CultureInfo.InvariantCulture);
+        FontScalePercent = settings.FontScalePercent;
+        WebEnabled = settings.Web.Enabled;
+        WebPort = settings.Web.Port.ToString(CultureInfo.InvariantCulture);
         ReaperHost = settings.Reaper.Host;
         ReaperHttpPort = settings.Reaper.HttpPort.ToString(CultureInfo.InvariantCulture);
         ReaperOscPort = settings.Reaper.OscPort.ToString(CultureInfo.InvariantCulture);
@@ -76,13 +171,15 @@ public partial class SettingsViewModel : ViewModelBase
         if (!TryParseGesture(PlayPauseKey, "Play/Pauza")
             || !TryParseGesture(PreviousKey, "Předchozí")
             || !TryParseGesture(NextKey, "Další")
+            || !ValidateNoDuplicateKeys()
             || !TryParseInt(PreviousSongsShown, 0, 20, "Počet předchozích písní", out int previousShown)
             || !TryParseInt(NextSongsShown, 0, 20, "Počet následujících písní", out int nextShown)
             || !TryParseDouble(PreviousThresholdSeconds, 0, 60, "Práh šipky zpět", out double threshold)
             || !TryParseInt(RegionsPollSeconds, 1, 3600, "Interval aktualizace regionů", out int pollSeconds)
             || !TryParseHost(ReaperHost)
             || !TryParseInt(ReaperHttpPort, 1, 65535, "HTTP port", out int httpPort)
-            || !TryParseInt(ReaperOscPort, 1, 65535, "OSC port", out int oscPort))
+            || !TryParseInt(ReaperOscPort, 1, 65535, "OSC port", out int oscPort)
+            || !TryParseInt(WebPort, 1, 65535, "Port webu", out int webPort))
         {
             return;
         }
@@ -95,6 +192,9 @@ public partial class SettingsViewModel : ViewModelBase
         settings.NextSongsShown = nextShown;
         settings.PreviousThresholdSeconds = threshold;
         settings.RegionsPollSeconds = pollSeconds;
+        settings.FontScalePercent = (int)Math.Round(Math.Clamp(FontScalePercent, 50, 200));
+        settings.Web.Enabled = WebEnabled;
+        settings.Web.Port = webPort;
         settings.Reaper.Host = ReaperHost.Trim();
         settings.Reaper.HttpPort = httpPort;
         settings.Reaper.OscPort = oscPort;
@@ -108,6 +208,21 @@ public partial class SettingsViewModel : ViewModelBase
     private void Back()
     {
         Closed?.Invoke(this, EventArgs.Empty);
+    }
+
+    private bool ValidateNoDuplicateKeys()
+    {
+        string playPause = PlayPauseKey.Trim();
+        string previous = PreviousKey.Trim();
+        string next = NextKey.Trim();
+
+        if (playPause == previous || playPause == next || previous == next)
+        {
+            ErrorMessage = "Každá akce musí mít jinou klávesu.";
+            return false;
+        }
+
+        return true;
     }
 
     private bool TryParseGesture(string value, string fieldName)
