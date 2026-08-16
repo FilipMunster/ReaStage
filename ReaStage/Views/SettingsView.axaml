@@ -76,7 +76,7 @@
             <Border Classes="card">
                 <StackPanel>
                     <TextBlock Classes="section" Text="ZOBRAZENÍ"/>
-                    <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto,Auto">
+                    <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
                         <TextBlock Grid.Row="0" Classes="label" Text="Předchozích písní"/>
                         <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding PreviousSongsShown}"/>
                         <TextBlock Grid.Row="1" Classes="label" Text="Následujících písní"/>
@@ -91,6 +91,8 @@
                             <TextBlock Text="{Binding FontScalePercent, StringFormat={}{0:0} %}"
                                        Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
                         </StackPanel>
+                        <TextBlock Grid.Row="4" Classes="label" Text="Vizuální metronom"/>
+                        <ToggleSwitch Grid.Row="4" Grid.Column="1" IsChecked="{Binding ShowMetronome}"/>
                     </Grid>
                 </StackPanel>
             </Border>

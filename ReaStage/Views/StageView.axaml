@@ -72,6 +72,12 @@
             <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
             <Setter Property="VerticalAlignment" Value="Bottom"/>
         </Style>
+        <Style Selector="Rectangle.statSeparator">
+            <Setter Property="Width" Value="1"/>
+            <Setter Property="Fill" Value="#3DFFFFFF"/>
+            <Setter Property="VerticalAlignment" Value="Bottom"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+        </Style>
         <!-- Metronome: no transitions, the dots must land with the audio click -->
         <Style Selector="Ellipse.beatDot">
             <Setter Property="Fill" Value="Transparent"/>
@@ -113,8 +119,8 @@
     </UserControl.Styles>
 
     <Panel>
-        <!-- Bottom margin reserves room for the status bar -->
-        <Grid RowDefinitions="*,Auto,*" Margin="48,24,48,74">
+        <!-- Bottom margin reserves room for the status bar and transport buttons -->
+        <Grid RowDefinitions="*,Auto,*" Margin="48,24,48,140">
 
             <!-- Previous songs, closest to the current song at the bottom -->
             <ItemsControl Grid.Row="0" ItemsSource="{Binding PreviousSongs}" VerticalAlignment="Bottom">
@@ -158,13 +164,7 @@
                                FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=58}"
                                FontWeight="Bold" Foreground="#FFFFFF"
                                TextAlignment="Center" TextTrimming="CharacterEllipsis"
-                               HorizontalAlignment="Center" VerticalAlignment="Center" Margin="116,26"/>
-
-                    <!-- Previous / next sit on the card edges; the rest of the card taps to Play/Pause -->
-                    <Button Classes="transport" Content="⏮" Command="{Binding PreviousCommand}"
-                            HorizontalAlignment="Left" VerticalAlignment="Center" Margin="16,0,0,0"/>
-                    <Button Classes="transport" Content="⏭" Command="{Binding NextCommand}"
-                            HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,16,0"/>
+                               HorizontalAlignment="Center" VerticalAlignment="Center" Margin="28,26"/>
 
                     <!-- Elapsed (left) and remaining (right), mm:ss over bar.beat -->
                     <Grid ColumnDefinitions="*,*" VerticalAlignment="Bottom" Margin="28,0,28,16">
@@ -197,23 +197,34 @@
             </ItemsControl>
         </Grid>
 
-        <!-- Bottom status bar -->
-        <Panel VerticalAlignment="Bottom" Margin="28,0,28,16">
+        <!-- Bottom area: statistics row above the transport buttons -->
+        <StackPanel VerticalAlignment="Bottom" Margin="28,0,28,14" Spacing="10">
             <Grid ColumnDefinitions="Auto,*,Auto">
-                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="16">
-                    <TextBlock Text="{Binding OrderText}" Classes="statValue"
-                               FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=28}"/>
+                <!-- Every section has a fixed width so the metronome to their right
+                     keeps its place when the digit count changes -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <StackPanel Orientation="Horizontal" Spacing="10"
+                                Width="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=124}">
+                        <TextBlock Text="{Binding SongNumberText}" Classes="statValue"
+                                   FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=28}"/>
+                        <Rectangle Classes="statSeparator"
+                                   Height="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=24}"/>
+                        <TextBlock Text="{Binding SongCountText}" Classes="statValue"
+                                   FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=28}"/>
+                    </StackPanel>
                     <TextBlock Text="{Binding BpmText}" Classes="statValue"
+                               Width="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=158}"
                                FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=28}"/>
                     <TextBlock Text="{Binding TimeSignatureText}" Classes="statValue"
+                               Width="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=78}"
                                FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=28}"/>
                 </StackPanel>
 
                 <!-- Visual metronome, left aligned so the dots keep their place
                      when the bar length changes -->
                 <ItemsControl Grid.Column="1" ItemsSource="{Binding MetronomeDots}"
-                              HorizontalAlignment="Left" VerticalAlignment="Center"
-                              Margin="26,0,0,0">
+                              IsVisible="{Binding ShowMetronome}"
+                              HorizontalAlignment="Left" VerticalAlignment="Center">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <StackPanel Orientation="Horizontal" Spacing="11"/>
@@ -241,7 +252,13 @@
                                FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=34}"/>
                 </StackPanel>
             </Grid>
-        </Panel>
+
+            <StackPanel Orientation="Horizontal" Spacing="20" HorizontalAlignment="Center">
+                <Button Classes="transport" Content="⏮" Command="{Binding PreviousCommand}"/>
+                <Button Classes="transport" Content="⏯" Command="{Binding PlayPauseCommand}"/>
+                <Button Classes="transport" Content="⏭" Command="{Binding NextCommand}"/>
+            </StackPanel>
+        </StackPanel>
 
         <!-- REAPER unreachable overlay -->
         <Border Background="#E60C0B10" IsVisible="{Binding !IsReaperReachable}">

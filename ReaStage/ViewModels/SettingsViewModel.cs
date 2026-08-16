@@ -43,6 +43,9 @@ public partial class SettingsViewModel : ViewModelBase
     private double fontScalePercent = 100;
 
     [ObservableProperty]
+    private bool showMetronome = true;
+
+    [ObservableProperty]
     private bool webEnabled;
 
     [ObservableProperty]
@@ -157,6 +160,7 @@ public partial class SettingsViewModel : ViewModelBase
         PreviousThresholdSeconds = settings.PreviousThresholdSeconds.ToString(CultureInfo.InvariantCulture);
         RegionsPollSeconds = settings.RegionsPollSeconds.ToString(CultureInfo.InvariantCulture);
         FontScalePercent = settings.FontScalePercent;
+        ShowMetronome = settings.ShowMetronome;
         WebEnabled = settings.Web.Enabled;
         WebPort = settings.Web.Port.ToString(CultureInfo.InvariantCulture);
         ReaperHost = settings.Reaper.Host;
@@ -193,6 +197,7 @@ public partial class SettingsViewModel : ViewModelBase
         settings.PreviousThresholdSeconds = threshold;
         settings.RegionsPollSeconds = pollSeconds;
         settings.FontScalePercent = (int)Math.Round(Math.Clamp(FontScalePercent, 50, 200));
+        settings.ShowMetronome = ShowMetronome;
         settings.Web.Enabled = WebEnabled;
         settings.Web.Port = webPort;
         settings.Reaper.Host = ReaperHost.Trim();

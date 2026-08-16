@@ -31,6 +31,8 @@ public class AppSettings
     // Font size multiplier for the stage view only, in percent (50–200)
     public int FontScalePercent { get; set; } = 100;
 
+    public bool ShowMetronome { get; set; } = true;
+
     public ReaperSettings Reaper { get; set; } = new();
     public WebSettings Web { get; set; } = new();
 }
