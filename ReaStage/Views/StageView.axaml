@@ -96,8 +96,10 @@
             <Setter Property="BoxShadow" Value="0 0 42 2 #384ADE80, 0 18 48 0 #8C000000"/>
         </Style>
 
-        <!-- Bottom transport bar: dim by default, highlights on hover -->
+        <!-- Bottom transport bar: dim by default, highlights on hover. Not focusable
+             so a transport key cannot re-trigger the button that has focus. -->
         <Style Selector="Button.transport">
+            <Setter Property="Focusable" Value="False"/>
             <Setter Property="Width" Value="84"/>
             <Setter Property="Height" Value="56"/>
             <Setter Property="FontSize" Value="26"/>

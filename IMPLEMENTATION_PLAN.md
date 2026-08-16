@@ -335,6 +335,14 @@ Tři tlačítka:
 - **Klávesové vstupy vs. fokus.** `Window.KeyBindings` nefunguje, když má fokus
   editovatelný prvek — vstup řešit globálním handlerem na úrovni okna
   s explicitním vypnutím v editoru/nastavení.
+  **Stalo se za koncertu:** při otevřeném postranním panelu handler transportní
+  klávesy nezpracovával, Mezerník tedy propadl na zaměřené tlačítko v panelu
+  a místo play/pause otevřel Nastavení. Ošetřeno dvěma vrstvami: (1) transportní
+  klávesy platí na celé stage obrazovce včetně otevřeného panelu — panel zavřou
+  a akci provedou; (2) hamburger, položky panelu i transportní tlačítka mají
+  `Focusable="False"`, takže na stage obrazovce nemá fokus co držet a klávesa
+  nemůže spustit tlačítko. Každý nový ovládací prvek na stage obrazovce musí být
+  taky nefokusovatelný.
 - **Latence HTTP příkazů.** Stop + SetPosition jsou dva HTTP požadavky; REAPER
   web API umožňuje řetězit příkazy do jednoho požadavku středníkem
   (`SET/POS/x;1016`) — použít pro atomičtější chování.

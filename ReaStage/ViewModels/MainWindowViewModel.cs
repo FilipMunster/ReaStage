@@ -81,26 +81,32 @@ public partial class MainWindowViewModel : ViewModelBase
             return Stage.ClearArm();
         }
 
-        // Transport keys work only on the stage page with the pane closed
-        if (CurrentPage != Stage || IsPaneOpen)
+        // Transport keys work on the whole stage page, the open side pane included.
+        // Letting them fall through there once opened Settings mid-concert, because
+        // Space activated the focused menu button. The pane holds no text input, so
+        // the keys close it and act instead.
+        if (CurrentPage != Stage)
         {
             return false;
         }
 
         if (playPauseGesture.Matches(e))
         {
+            IsPaneOpen = false;
             PlayPauseCommand.Execute(null);
             return true;
         }
 
         if (previousGesture.Matches(e))
         {
+            IsPaneOpen = false;
             PreviousCommand.Execute(null);
             return true;
         }
 
         if (nextGesture.Matches(e))
         {
+            IsPaneOpen = false;
             NextCommand.Execute(null);
             return true;
         }

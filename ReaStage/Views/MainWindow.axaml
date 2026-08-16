@@ -19,6 +19,11 @@
     </Window.Background>
 
     <Window.Styles>
+        <!-- Mouse-only affordances. Keeping them out of the focus chain means a
+             transport key can never activate one instead of driving playback. -->
+        <Style Selector="Button.menu, Button.hamburger">
+            <Setter Property="Focusable" Value="False"/>
+        </Style>
         <Style Selector="Button.menu">
             <Setter Property="HorizontalAlignment" Value="Stretch"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
