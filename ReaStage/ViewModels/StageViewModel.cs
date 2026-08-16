@@ -5,6 +5,7 @@ using ReaStage.Core;
 using ReaStage.Services;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -65,7 +66,14 @@ public partial class StageViewModel : ViewModelBase
     private IReadOnlyList<MetronomeDot> metronomeDots = [];
 
     [ObservableProperty]
-    private string orderText = string.Empty;
+    private bool showMetronome = true;
+
+    // Song order split so the view can put a rule between the two numbers
+    [ObservableProperty]
+    private string songNumberText = string.Empty;
+
+    [ObservableProperty]
+    private string songCountText = string.Empty;
 
     [ObservableProperty]
     private string remainingPlaylistText = string.Empty;
@@ -103,19 +111,21 @@ public partial class StageViewModel : ViewModelBase
         regionCatalog.ReachabilityChanged += (_, _) => Dispatcher.UIThread.Post(Update);
         settingsService.SettingsSaved += (_, _) => Dispatcher.UIThread.Post(OnSettingsSaved);
 
-        UpdateFontScale();
+        ApplyDisplaySettings();
         Update();
     }
 
     private void OnSettingsSaved()
     {
-        UpdateFontScale();
+        ApplyDisplaySettings();
         Update();
     }
 
-    private void UpdateFontScale()
+    private void ApplyDisplaySettings()
     {
-        FontScale = Math.Clamp(settingsService.Settings.FontScalePercent, 50, 200) / 100.0;
+        AppSettings settings = settingsService.Settings;
+        FontScale = Math.Clamp(settings.FontScalePercent, 50, 200) / 100.0;
+        ShowMetronome = settings.ShowMetronome;
     }
 
     [RelayCommand]
@@ -189,8 +199,8 @@ public partial class StageViewModel : ViewModelBase
 
             int previousCount = Math.Min(settings.PreviousSongsShown, index);
             int nextCount = Math.Min(settings.NextSongsShown, items.Count - index - 1);
-            PreviousSongs = BuildItems(items, index - previousCount, previousCount);
-            NextSongs = BuildItems(items, index + 1, nextCount);
+            PreviousSongs = KeepOrBuild(PreviousSongs, items, index - previousCount, previousCount);
+            NextSongs = KeepOrBuild(NextSongs, items, index + 1, nextCount);
         }
         else
         {
@@ -199,14 +209,15 @@ public partial class StageViewModel : ViewModelBase
             CurrentSongName = "—";
             Progress = 0;
             ClearSongTimes();
-            PreviousSongs = [];
-            NextSongs = BuildItems(items, 0, Math.Min(settings.NextSongsShown, items.Count));
+            PreviousSongs = PreviousSongs.Count == 0 ? PreviousSongs : [];
+            NextSongs = KeepOrBuild(NextSongs, items, 0, Math.Min(settings.NextSongsShown, items.Count));
         }
 
         BpmText = StageStats.FormatBpm(position.TempoBpm);
         TimeSignatureText = StageStats.FormatTimeSignature(position.TimeSigNumerator, position.TimeSigDenominator);
         UpdateMetronome(position);
-        OrderText = StageStats.OrderText(index, items.Count);
+        SongNumberText = index >= 0 ? (index + 1).ToString(CultureInfo.InvariantCulture) : "–";
+        SongCountText = items.Count.ToString(CultureInfo.InvariantCulture);
         remainingPlaylistSeconds = StageStats.RemainingPlaylistSeconds(items, index, position.PositionSeconds);
         RemainingPlaylistText = StageStats.FormatClock(remainingPlaylistSeconds);
         UpdateEndEstimate();
@@ -282,8 +293,34 @@ public partial class StageViewModel : ViewModelBase
         EndEstimateText = StageStats.FormatEndEstimate(DateTime.Now, remainingPlaylistSeconds);
     }
 
-    private static IReadOnlyList<StageSongItem> BuildItems(IReadOnlyList<ResolvedPlaylistItem> items, int start, int count)
+    // Position updates arrive several times a second while playing. Handing the
+    // ItemsControl a new collection every time makes it discard and recreate the
+    // containers, which flickers the cursor and swallows clicks, so the existing
+    // instances are kept whenever the songs on screen have not actually changed.
+    private static IReadOnlyList<StageSongItem> KeepOrBuild(
+        IReadOnlyList<StageSongItem> current,
+        IReadOnlyList<ResolvedPlaylistItem> items,
+        int start,
+        int count)
     {
+        if (current.Count == count)
+        {
+            bool unchanged = true;
+            for (int i = 0; i < count; i++)
+            {
+                if (current[i].Index != start + i || current[i].Name != SongName(items[start + i]))
+                {
+                    unchanged = false;
+                    break;
+                }
+            }
+
+            if (unchanged)
+            {
+                return current;
+            }
+        }
+
         return Enumerable.Range(start, count)
             .Select(i => new StageSongItem(i, SongName(items[i])))
             .ToList();
