@@ -11,8 +11,20 @@ public partial class SettingsView : UserControl
     {
         InitializeComponent();
 
-        // Tunnel so a captured key is taken before a focused button treats it as a click
+        // Tunnel so a captured key is taken before anything else reacts to it
         AddHandler(KeyDownEvent, OnCaptureKeyDown, RoutingStrategies.Tunnel);
+        AddHandler(KeyUpEvent, OnCaptureSwallow, RoutingStrategies.Tunnel);
+        AddHandler(TextInputEvent, OnCaptureSwallow, RoutingStrategies.Tunnel);
+    }
+
+    // While capturing, no other control may see the keystroke — otherwise the key
+    // being assigned also lands in whichever text box holds focus
+    private void OnCaptureSwallow(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is SettingsViewModel viewModel && viewModel.IsCapturing)
+        {
+            e.Handled = true;
+        }
     }
 
     private void OnCaptureKeyDown(object? sender, KeyEventArgs e)

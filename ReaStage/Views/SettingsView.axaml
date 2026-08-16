@@ -35,7 +35,10 @@
             <Setter Property="HorizontalAlignment" Value="Left"/>
             <Setter Property="Margin" Value="0,3"/>
         </Style>
+        <!-- Not focusable: a focused button fires Click on Space key-up, which would
+             restart the capture right after the key was recorded -->
         <Style Selector="Button.keyCapture">
+            <Setter Property="Focusable" Value="False"/>
             <Setter Property="Width" Value="220"/>
             <Setter Property="HorizontalAlignment" Value="Left"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
