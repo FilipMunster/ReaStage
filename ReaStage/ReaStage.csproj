@@ -7,6 +7,16 @@
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
   </PropertyGroup>
 
+  <!-- The web server pulls in Microsoft.AspNetCore.App, which a framework-dependent
+       build would require on the target machine. Publishing is therefore
+       self-contained; plain builds are unaffected. Trimming stays off - Avalonia and
+       the minimal API both rely on reflection. -->
+  <PropertyGroup>
+    <RuntimeIdentifiers>win-x64;linux-x64</RuntimeIdentifiers>
+    <PublishSelfContained>true</PublishSelfContained>
+    <PublishTrimmed>false</PublishTrimmed>
+  </PropertyGroup>
+
   <ItemGroup>
     <Folder Include="Models\" />
     <AvaloniaResource Include="Assets\**" />
