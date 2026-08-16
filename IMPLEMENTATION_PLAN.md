@@ -186,19 +186,21 @@ Tři tlačítka:
 
 | Téma | Rozhodnutí |
 |---|---|
-| Transportní tlačítka | Přesunuta do spodní lišty okna (ne overlay nad aktuální písní). Zašedlá, poloprůhledná; při najetí myší se zvýrazní. Rewind/forward/play-pauza volají tutéž logiku koordinátoru jako klávesy ← / → / Mezerník (rewind včetně prahu `previousThresholdSeconds`). |
+| Transportní tlačítka | Ve spodní liště okna (ne overlay nad aktuální písní, ani na okrajích karty — obojí vyzkoušeno a zavrženo). Tři tlačítka ⏮ / ⏯ / ⏭, zašedlá a poloprůhledná; při najetí myší se zvýrazní. Volají tutéž logiku koordinátoru jako klávesy ← / → / Mezerník (rewind včetně prahu `previousThresholdSeconds`). |
+| Klik na kartu aktuální písně | Play/pauza — stejně jako tap na webu. Zůstává i vedle tlačítka ⏯ ve spodní liště. |
+| Stavový řádek | Každá sekce má **pevnou šířku** (škálovanou `fontScalePercent`), aby metronom vpravo od nich neposkakoval, když se změní počet číslic. Pořadí písně se zobrazuje jako `N │ M` — číslo a počet oddělené svislou linkou. |
 | Scrubbing pozice | **Zamítnuto** (implementováno a následně odstraněno). Tažení myší nad kartou aktuální písně ani akord Mezerník + šipka se v praxi neosvědčily; Mezerník tak zůstává u chování z kapitoly 1 (play/pause na stisk, žádná vlastní logika). |
 | Klik na jinou píseň | Dvoukrokově: první klik píseň „odjistí" (zvýraznění), druhý klik potvrdí skok (Stop + SetPosition na začátek písně). Pojistka proti překliku na pódiu. |
 | Časy v kartě aktuální písně | Čas od začátku i zbývající do konce, každý **současně ve dvou formátech**: `mm:ss` i `bar:beat`. Nahrazují dosavadní jediný údaj pozice ve formátu REAPERu. |
 | BPM | Ve statistikách se zobrazuje aktuální tempo (BPM). |
 | Taktový rozměr | Ve spodní liště vedle BPM (`4/4`, `6/8`). Zdroj je HTTP `BEATPOS` — OSC taktový rozměr neposílá, takže se obnovuje při startu a při každém skoku na píseň (změna uprostřed písně se projeví až u další). |
-| Vizuální metronom | Ve spodní liště tolik teček, kolik je dob v taktu. Plní se kumulativně 1→N a na jedničce se vynulují; první doba zlatá (`#FBBF24`), ostatní zelené (akcent). Zarovnáno vlevo, aby tečky při změně taktu nepřeskakovaly. **Bez animací a bez vlastního časovače** — kreslí se přímo doba hlášená REAPERem (`/beat/str`), aby latence proti audio metronomu byla co nejmenší. |
+| Vizuální metronom | Ve spodní liště tolik teček, kolik je dob v taktu. Plní se kumulativně 1→N a na jedničce se vynulují; první doba zlatá (`#FBBF24`), ostatní zelené (akcent). Zarovnáno vlevo, aby tečky při změně taktu nepřeskakovaly. **Bez animací a bez vlastního časovače** — kreslí se přímo doba hlášená REAPERem (`/beat/str`), aby latence proti audio metronomu byla co nejmenší. Lze vypnout v nastavení (`showMetronome`). |
 | Latence metronomu | Dána frekvencí OSC feedbacku REAPERu (`Update frequency` u OSC zařízení, výchozí nízká — u testovaného stroje 10 Hz = až 100 ms). Pro použitelný metronom je potřeba ji zvednout (~30–50 Hz). Pokud by ani to nestačilo, metronom se zruší. |
 | Zdroj tempa | Ověřeno: web API REAPERu tempo nevystavuje vůbec a OSC `/tempo/raw` chodí **jen při změně tempa** — aplikace připojená k už načtenému projektu se BPM nikdy nedozví. Proto se tempo za přehrávání **měří** z rychlosti postupu beatů (`/beat/str` + `/time`, okno 1,5 s, krok 0,5 BPM); `/tempo/raw` má přednost, když ho REAPER pošle. |
 | Zbývající čas playlistu | Čistý hudební čas: zbytek aktuální písně + součet délek následujících písní playlistu. Čekání mezi písněmi se nepredikuje — odhad času konce se při stání posouvá. |
 | Webové ovládání | HTTP server v ReaStage (**ASP.NET Core minimal API / Kestrel**), port v nastavení, bez autentizace, jen StageView, optimalizováno pro mobil. Stránka aktualizuje stav **pollingem** (à la REAPER `reaper_www_root`). |
 
-### 5.2 Fáze 7 — Tempo z REAPERu (základ pro BPM i scrubbing)
+### 5.2 Fáze 7 — Tempo z REAPERu (základ pro BPM a bar:beat)
 
 - Rozšířit `ReaStage.ReaperOSC` o řádek `TEMPO f/tempo/raw` (uživatel poté
   re-importuje OSC config v REAPERu).
@@ -214,24 +216,34 @@ Tři tlačítka:
 - **Transportní lišta dole (ne overlay):** tři tlačítka (⏮ rewind, ⏯ play/pauza,
   ⏭ forward) ve spodní části okna, zašedlá a poloprůhledná; při najetí myší se
   zvýrazní. Volají `GoToPreviousAsync` / `TogglePlayPauseAsync` / `GoToNextAsync`
-  na koordinátoru — identické chování jako klávesy.
+  na koordinátoru — identické chování jako klávesy. Mezikrok, kdy tlačítka seděla
+  na okrajích karty aktuální písně, se neosvědčil a byl vrácen zpět.
+- **Klik na kartu aktuální písně** = play/pauza (`TogglePlayPauseAsync`), stejně
+  jako tap na webu.
 - **Scrubbing byl zrušen.** Původně navržené tažení myší nad kartou aktuální písně
   a akord Mezerník + šipka se neosvědčily a byly odstraněny včetně příkazů
   `SeekByBarsAsync` / `SeekWithinCurrentAsync`. Mezerník opět posílá play/pause
-  na stisk klávesy. Karta aktuální písně na kliknutí nereaguje.
+  na stisk klávesy.
 - Nový příkaz koordinátoru: `JumpToItemAtAsync(int index)` (zobecnění interní
   `JumpToItemAsync`) pro two-click skok.
-- **Klik na jinou viditelnou píseň** (beze změny z původního návrhu): první klik
-  kartu odjistí (akcentový rámeček), druhý klik do ~4 s provede Stop + SetPosition
-  na začátek té písně. Klik jinam, Escape nebo timeout odjištění zruší. Odjištění je
-  čistě UI stav ve `StageViewModel`.
+- **Klik na jinou viditelnou píseň:** první klik kartu odjistí (akcentový rámeček),
+  druhý klik do ~4 s provede Stop + SetPosition na začátek té písně. Escape nebo
+  timeout odjištění zruší. Odjištění je čistě UI stav ve `StageViewModel`.
+  *Vědomá odchylka:* „klik jinam" odjištění neruší (ponecháno, stačí Escape a timeout).
+- **Seznamy okolních písní se nesmí přestavovat při každé změně pozice.** Za
+  přehrávání chodí OSC několikrát za sekundu; pokud se kolekce položek pokaždé
+  vytvoří znovu, `ItemsControl` zahodí a znovu vyrobí kontejnery — kurzor nad
+  písní kmitá mezi ručičkou a šipkou a klik se nikdy nedokončí. Kolekce se proto
+  mění jen tehdy, když se skutečně změní zobrazené písně.
 
 ### 5.4 Fáze 9 — Statistiky a časy
 
 - **V kartě aktuální písně:** vlevo dole čas od začátku písně (`pozice − start`),
   vpravo dole zbývající čas s prefixem minus (`−(end − pozice)`). Každý údaj
-  **současně ve dvou formátech**: `mm:ss` i `bar:beat` (z `PositionStringBeats`,
-  resp. `MeasureCount`/`BeatsInMeasure`). Nahrazuje dosavadní centrovaný údaj pozice.
+  **současně ve dvou formátech**: `mm:ss` i `bar:beat` (počítáno z `TempoBpm`
+  a taktového rozměru — REAPER hlásí bar:beat jen absolutně od začátku projektu,
+  ne v rámci písně). Nahrazuje dosavadní centrovaný údaj pozice. Čas od začátku je
+  pozice v písni (1-based), zbývající čas je délka úseku (počítá se od nuly).
 - **Aktuální BPM** (z `TempoBpm`) — ve statistikách (spodní lišta nebo karta).
 - **Spodní stavová lišta stage view:**
   - pořadí: `N / M` (číslo aktuální písně / počet písní playlistu);
@@ -256,6 +268,8 @@ Tři tlačítka:
   obrazovky beze změny. Projeví se okamžitě po uložení (bez restartu).
 - **Nastavení webového serveru:** povolení (on/off) a port webu (`web.enabled`,
   `web.port` v `settings.json`, default např. 9125).
+- **Zobrazení metronomu:** přepínač `showMetronome` (default zapnuto) — skryje
+  tečky metronomu ve stavovém řádku. Taktový rozměr zůstává zobrazen.
 
 ### 5.6 Fáze 11 — Webové ovládání (mobil)
 
@@ -287,6 +301,23 @@ Tři tlačítka:
   další tik). Bez SSE. Referenční statické stránky REAPERu: `…/Plugins/reaper_www_root/`
   (`basic.html`, `click.html`, `index.html`) — stejný princip (polling `/_/COMMAND`
   přes XHR).
+- **Publikace self-contained:** kvůli `FrameworkReference Microsoft.AspNetCore.App`
+  vyžaduje framework-dependent build nainstalovaný ASP.NET Core runtime, ne jen
+  desktopový. V `.csproj` proto `RuntimeIdentifiers` (`win-x64`, `linux-x64`)
+  a `PublishSelfContained`; běžný `dotnet build` zůstává beze změny. Bez trimmingu —
+  Avalonia i minimal API stojí na reflexi.
+
+### 5.7 Fáze 12 — Taktový rozměr a vizuální metronom
+
+- **Taktový rozměr** ve stavovém řádku vedle BPM (`FormatTimeSignature`).
+  Zdroj `TimeSigNumerator`/`Denominator` z HTTP `BEATPOS`.
+- **Tečky metronomu:** jedna na dobu taktu, kumulativní plnění, zlatá jednička.
+  Instance teček se recyklují — při změně doby se přepíná jen `IsLit`, seznam se
+  přestavuje pouze při změně délky taktu (latence a plynulost).
+- Doba v taktu z `PositionStringBeats` (`StageStats.BeatInBar`) — nepotřebuje tempo.
+- Odvození tempa přepočítat na čtvrťky (`× 4/jmenovatel`), jinak x/8 hlásí
+  dvojnásobné BPM.
+- Vypínatelné nastavením `showMetronome`.
 
 ## 6. Rizika a poznámky
 
@@ -306,5 +337,15 @@ Tři tlačítka:
 - **Latence HTTP příkazů.** Stop + SetPosition jsou dva HTTP požadavky; REAPER
   web API umožňuje řetězit příkazy do jednoho požadavku středníkem
   (`SET/POS/x;1016`) — použít pro atomičtější chování.
-- **OSC pattern soubor.** Stávající `ReaStage.ReaperOSC` posílá čas, beat
-  a transport — pro plán dostačuje; regiony se čtou přes HTTP.
+- **OSC pattern soubor.** Stávající `ReaStage.ReaperOSC` posílá čas, beat, tempo
+  a transport; regiony se čtou přes HTTP. Po změně souboru je nutný re-import
+  OSC configu v REAPERu.
+- **REAPER posílá i zprávy mimo bundle.** Sdružuje jen hodnoty, které vzniknou
+  naráz; osamocenou hodnotu (typicky `/tempo/raw`) pošle jako holou OSC zprávu.
+  Příjem musí zvládat obě podoby paketu, jinak se taková hodnota tiše ztrácí.
+- **Frekvence OSC feedbacku.** `Update frequency` u OSC zařízení v REAPERu určuje
+  latenci všeho, co se veze na pozici (metronom, progress, detekce konce písně).
+  Výchozích ~10 Hz je pro metronom málo, doporučeno 30–50 Hz.
+- **Stav „mezi písničkami".** Kapitola 3.1 počítá s tím, že rámeček ukáže
+  připravenou píseň bez progressu. Implementace zobrazuje pomlčku a připravenou
+  píseň až v seznamu následujících — *vědomě ponecháno*.
