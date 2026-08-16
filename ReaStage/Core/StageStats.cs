@@ -94,12 +94,13 @@ public static class StageStats
             : "— BPM";
     }
 
-    // "N / M", or "– / M" when no song is current
+    // "N/M", or "–/M" when no song is current. Written tight so the fixed-width
+    // status bar section stays narrow even at three-digit playlists.
     public static string OrderText(int index, int count)
     {
         return index >= 0
-            ? $"{index + 1} / {count}"
-            : $"– / {count}";
+            ? $"{index + 1}/{count}"
+            : $"–/{count}";
     }
 
     // Pure musical time to the end of the playlist: rest of the current song plus

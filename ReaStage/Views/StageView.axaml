@@ -197,18 +197,19 @@
             </ItemsControl>
         </Grid>
 
-        <!-- Bottom bar: everything on one row -->
-        <Grid VerticalAlignment="Bottom" Margin="28,0,28,16" ColumnDefinitions="Auto,*,Auto,*,Auto">
+        <!-- Bottom bar: everything on one row, transport centred on the window -->
+        <Panel VerticalAlignment="Bottom" Margin="28,0,28,16">
+            <Grid ColumnDefinitions="Auto,*,Auto">
             <!-- Sections divided by vertical rules; each has a fixed width so the
                  metronome does not shift as digits come and go -->
             <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
                 <TextBlock Text="{Binding OrderText}" Classes="statValue"
-                           Width="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=104}"
+                           Width="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=78}"
                            FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=28}"/>
                 <Rectangle Classes="statSeparator"
                            Height="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=26}"/>
                 <TextBlock Text="{Binding BpmText}" Classes="statValue"
-                           Width="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=152}"
+                           Width="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=140}"
                            FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=28}"/>
                 <Rectangle Classes="statSeparator"
                            Height="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=26}"/>
@@ -237,23 +238,27 @@
                 </ItemsControl>
             </StackPanel>
 
-            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="20" VerticalAlignment="Center">
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <TextBlock Text="zbývá" Classes="statLabel"
+                               FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=17}"/>
+                    <TextBlock Text="{Binding RemainingPlaylistText}" Classes="statValue" Margin="0,0,14,0"
+                               FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=34}"/>
+                    <TextBlock Text="konec" Classes="statLabel"
+                               FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=17}"/>
+                    <TextBlock Text="{Binding EndEstimateText}" Classes="statValue"
+                               FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=34}"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Overlaid rather than placed in a column so it centres on the window,
+                 not between the two groups -->
+            <StackPanel Orientation="Horizontal" Spacing="20"
+                        HorizontalAlignment="Center" VerticalAlignment="Center">
                 <Button Classes="transport" Content="⏮" Command="{Binding PreviousCommand}"/>
                 <Button Classes="transport" Content="⏯" Command="{Binding PlayPauseCommand}"/>
                 <Button Classes="transport" Content="⏭" Command="{Binding NextCommand}"/>
             </StackPanel>
-
-            <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                <TextBlock Text="zbývá" Classes="statLabel"
-                           FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=17}"/>
-                <TextBlock Text="{Binding RemainingPlaylistText}" Classes="statValue" Margin="0,0,14,0"
-                           FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=34}"/>
-                <TextBlock Text="konec" Classes="statLabel"
-                           FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=17}"/>
-                <TextBlock Text="{Binding EndEstimateText}" Classes="statValue"
-                           FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=34}"/>
-            </StackPanel>
-        </Grid>
+        </Panel>
 
         <!-- REAPER unreachable overlay -->
         <Border Background="#E60C0B10" IsVisible="{Binding !IsReaperReachable}">

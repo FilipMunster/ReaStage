@@ -28,7 +28,7 @@ public class WebStateBuilderTests
         Assert.Equal("Two", state.Songs[1].Name);
         Assert.Equal(1, state.CurrentIndex);
         Assert.True(state.IsPlaying);
-        Assert.Equal("2 / 3", state.Order);
+        Assert.Equal("2/3", state.Order);
         Assert.Equal("0:40", state.Elapsed);
         Assert.Equal("21.1", state.ElapsedBeats);
         Assert.Equal("−0:50", state.Remaining);
@@ -46,7 +46,7 @@ public class WebStateBuilderTests
         Assert.Equal(-1, state.CurrentIndex);
         Assert.Equal(0, state.Progress);
         Assert.Equal(string.Empty, state.Elapsed);
-        Assert.Equal("– / 3", state.Order);
+        Assert.Equal("–/3", state.Order);
         Assert.Equal("3:00", state.RemainingPlaylist);
     }
 }

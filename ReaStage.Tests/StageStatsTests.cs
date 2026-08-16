@@ -78,9 +78,9 @@ public class StageStatsTests
     }
 
     [Theory]
-    [InlineData(0, 3, "1 / 3")]
-    [InlineData(2, 3, "3 / 3")]
-    [InlineData(-1, 3, "– / 3")]
+    [InlineData(0, 3, "1/3")]
+    [InlineData(2, 3, "3/3")]
+    [InlineData(-1, 3, "–/3")]
     public void OrderText_UsesOneBasedIndex(int index, int count, string expected)
     {
         Assert.Equal(expected, StageStats.OrderText(index, count));
