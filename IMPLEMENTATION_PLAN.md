@@ -186,9 +186,9 @@ Tři tlačítka:
 
 | Téma | Rozhodnutí |
 |---|---|
-| Transportní tlačítka | Ve spodní liště okna (ne overlay nad aktuální písní, ani na okrajích karty — obojí vyzkoušeno a zavrženo). Tři tlačítka ⏮ / ⏯ / ⏭, zašedlá a poloprůhledná; při najetí myší se zvýrazní. Volají tutéž logiku koordinátoru jako klávesy ← / → / Mezerník (rewind včetně prahu `previousThresholdSeconds`). |
+| Transportní tlačítka | Ve spodní liště okna, **na stejném řádku** jako statistiky (ne overlay nad aktuální písní, ani na okrajích karty, ani ve vlastním řádku — vše vyzkoušeno a zavrženo). Tři tlačítka ⏮ / ⏯ / ⏭, zašedlá a poloprůhledná; při najetí myší se zvýrazní. Volají tutéž logiku koordinátoru jako klávesy ← / → / Mezerník (rewind včetně prahu `previousThresholdSeconds`). |
 | Klik na kartu aktuální písně | Play/pauza — stejně jako tap na webu. Zůstává i vedle tlačítka ⏯ ve spodní liště. |
-| Stavový řádek | Každá sekce má **pevnou šířku** (škálovanou `fontScalePercent`), aby metronom vpravo od nich neposkakoval, když se změní počet číslic. Pořadí písně se zobrazuje jako `N │ M` — číslo a počet oddělené svislou linkou. |
+| Stavový řádek | Jeden řádek: vlevo statistiky s metronomem, uprostřed transportní tlačítka, vpravo zbývající čas a odhad konce. Sekce vlevo jsou oddělené **svislou linkou** (`1 / 7 │ 150 BPM │ 4/4 ●●○○`) a každá má **pevnou šířku** (škálovanou `fontScalePercent`), aby metronom neposkakoval, když se změní počet číslic. |
 | Scrubbing pozice | **Zamítnuto** (implementováno a následně odstraněno). Tažení myší nad kartou aktuální písně ani akord Mezerník + šipka se v praxi neosvědčily; Mezerník tak zůstává u chování z kapitoly 1 (play/pause na stisk, žádná vlastní logika). |
 | Klik na jinou píseň | Dvoukrokově: první klik píseň „odjistí" (zvýraznění), druhý klik potvrdí skok (Stop + SetPosition na začátek písně). Pojistka proti překliku na pódiu. |
 | Časy v kartě aktuální písně | Čas od začátku i zbývající do konce, každý **současně ve dvou formátech**: `mm:ss` i `bar:beat`. Nahrazují dosavadní jediný údaj pozice ve formátu REAPERu. |

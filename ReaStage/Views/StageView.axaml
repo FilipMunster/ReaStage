@@ -119,8 +119,8 @@
     </UserControl.Styles>
 
     <Panel>
-        <!-- Bottom margin reserves room for the status bar and transport buttons -->
-        <Grid RowDefinitions="*,Auto,*" Margin="48,24,48,140">
+        <!-- Bottom margin reserves room for the status bar -->
+        <Grid RowDefinitions="*,Auto,*" Margin="48,24,48,92">
 
             <!-- Previous songs, closest to the current song at the bottom -->
             <ItemsControl Grid.Row="0" ItemsSource="{Binding PreviousSongs}" VerticalAlignment="Bottom">
@@ -197,32 +197,27 @@
             </ItemsControl>
         </Grid>
 
-        <!-- Bottom area: statistics row above the transport buttons -->
-        <StackPanel VerticalAlignment="Bottom" Margin="28,0,28,14" Spacing="10">
-            <Grid ColumnDefinitions="Auto,*,Auto">
-                <!-- Every section has a fixed width so the metronome to their right
-                     keeps its place when the digit count changes -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal">
-                    <StackPanel Orientation="Horizontal" Spacing="10"
-                                Width="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=124}">
-                        <TextBlock Text="{Binding SongNumberText}" Classes="statValue"
-                                   FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=28}"/>
-                        <Rectangle Classes="statSeparator"
-                                   Height="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=24}"/>
-                        <TextBlock Text="{Binding SongCountText}" Classes="statValue"
-                                   FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=28}"/>
-                    </StackPanel>
-                    <TextBlock Text="{Binding BpmText}" Classes="statValue"
-                               Width="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=158}"
-                               FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=28}"/>
-                    <TextBlock Text="{Binding TimeSignatureText}" Classes="statValue"
-                               Width="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=78}"
-                               FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=28}"/>
-                </StackPanel>
+        <!-- Bottom bar: everything on one row -->
+        <Grid VerticalAlignment="Bottom" Margin="28,0,28,16" ColumnDefinitions="Auto,*,Auto,*,Auto">
+            <!-- Sections divided by vertical rules; each has a fixed width so the
+                 metronome does not shift as digits come and go -->
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
+                <TextBlock Text="{Binding OrderText}" Classes="statValue"
+                           Width="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=104}"
+                           FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=28}"/>
+                <Rectangle Classes="statSeparator"
+                           Height="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=26}"/>
+                <TextBlock Text="{Binding BpmText}" Classes="statValue"
+                           Width="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=152}"
+                           FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=28}"/>
+                <Rectangle Classes="statSeparator"
+                           Height="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=26}"/>
+                <TextBlock Text="{Binding TimeSignatureText}" Classes="statValue"
+                           Width="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=58}"
+                           FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=28}"/>
 
-                <!-- Visual metronome, left aligned so the dots keep their place
-                     when the bar length changes -->
-                <ItemsControl Grid.Column="1" ItemsSource="{Binding MetronomeDots}"
+                <!-- Left aligned so the dots keep their place when the bar changes -->
+                <ItemsControl ItemsSource="{Binding MetronomeDots}"
                               IsVisible="{Binding ShowMetronome}"
                               HorizontalAlignment="Left" VerticalAlignment="Center">
                     <ItemsControl.ItemsPanel>
@@ -240,25 +235,25 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
+            </StackPanel>
 
-                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
-                    <TextBlock Text="zbývá" Classes="statLabel"
-                               FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=17}"/>
-                    <TextBlock Text="{Binding RemainingPlaylistText}" Classes="statValue" Margin="0,0,14,0"
-                               FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=34}"/>
-                    <TextBlock Text="konec" Classes="statLabel"
-                               FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=17}"/>
-                    <TextBlock Text="{Binding EndEstimateText}" Classes="statValue"
-                               FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=34}"/>
-                </StackPanel>
-            </Grid>
-
-            <StackPanel Orientation="Horizontal" Spacing="20" HorizontalAlignment="Center">
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="20" VerticalAlignment="Center">
                 <Button Classes="transport" Content="⏮" Command="{Binding PreviousCommand}"/>
                 <Button Classes="transport" Content="⏯" Command="{Binding PlayPauseCommand}"/>
                 <Button Classes="transport" Content="⏭" Command="{Binding NextCommand}"/>
             </StackPanel>
-        </StackPanel>
+
+            <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <TextBlock Text="zbývá" Classes="statLabel"
+                           FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=17}"/>
+                <TextBlock Text="{Binding RemainingPlaylistText}" Classes="statValue" Margin="0,0,14,0"
+                           FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=34}"/>
+                <TextBlock Text="konec" Classes="statLabel"
+                           FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=17}"/>
+                <TextBlock Text="{Binding EndEstimateText}" Classes="statValue"
+                           FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=34}"/>
+            </StackPanel>
+        </Grid>
 
         <!-- REAPER unreachable overlay -->
         <Border Background="#E60C0B10" IsVisible="{Binding !IsReaperReachable}">

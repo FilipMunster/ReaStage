@@ -5,7 +5,6 @@ using ReaStage.Core;
 using ReaStage.Services;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -68,12 +67,8 @@ public partial class StageViewModel : ViewModelBase
     [ObservableProperty]
     private bool showMetronome = true;
 
-    // Song order split so the view can put a rule between the two numbers
     [ObservableProperty]
-    private string songNumberText = string.Empty;
-
-    [ObservableProperty]
-    private string songCountText = string.Empty;
+    private string orderText = string.Empty;
 
     [ObservableProperty]
     private string remainingPlaylistText = string.Empty;
@@ -216,8 +211,7 @@ public partial class StageViewModel : ViewModelBase
         BpmText = StageStats.FormatBpm(position.TempoBpm);
         TimeSignatureText = StageStats.FormatTimeSignature(position.TimeSigNumerator, position.TimeSigDenominator);
         UpdateMetronome(position);
-        SongNumberText = index >= 0 ? (index + 1).ToString(CultureInfo.InvariantCulture) : "–";
-        SongCountText = items.Count.ToString(CultureInfo.InvariantCulture);
+        OrderText = StageStats.OrderText(index, items.Count);
         remainingPlaylistSeconds = StageStats.RemainingPlaylistSeconds(items, index, position.PositionSeconds);
         RemainingPlaylistText = StageStats.FormatClock(remainingPlaylistSeconds);
         UpdateEndEstimate();
