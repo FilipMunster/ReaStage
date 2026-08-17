@@ -107,8 +107,9 @@ monitoru. Hlavní okno = stage view, vlevo nahoře hamburger ikona otevírajíc�
 
 - Vertikální pás playlistu přes celou plochu okna, aktuální píseň uprostřed.
 - **Aktuální píseň:** velké písmo, barevný rámeček. Pozadí rámečku se zleva plní
-  (šedý progress) podle pozice v písni — `Border` + `Rectangle` s šířkou
-  úměrnou progressu.
+  podle pozice v písni. Výplň je **pozadím samotného rámečku** (gradient s tvrdou
+  hranou na hodnotě progressu, `ProgressBrushConverter`), ne vnořený prvek se
+  šířkou — ten při šířce menší než rádius rohů vykukoval přes zaoblený okraj.
 - **Předchozí písně** nad ní: menší písmo, nejméně výrazné.
 - **Následující písně** pod ní: výraznější než předchozí, méně než aktuální.
 - **Počet zobrazených písní se nenastavuje** — zobrazí se tolik, kolik se vejde na

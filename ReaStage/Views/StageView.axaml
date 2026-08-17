@@ -12,7 +12,7 @@
              Background="Transparent">
 
     <UserControl.Resources>
-        <conv:ProgressWidthConverter x:Key="ProgressWidth"/>
+        <conv:ProgressBrushConverter x:Key="ProgressBrush"/>
         <conv:FontScaleConverter x:Key="FontScale"/>
     </UserControl.Resources>
 
@@ -155,31 +155,16 @@
             </Panel>
 
             <!-- Current song with progress fill; tapping the card is Play/Pause -->
-            <Border Grid.Row="1" x:Name="CurrentFrame"
+            <Border Grid.Row="1"
                     Classes="currentSong"
                     Classes.playing="{Binding IsPlaying}"
                     Cursor="Hand"
                     Tapped="OnCurrentSongTapped">
                 <Panel>
-                    <Border HorizontalAlignment="Left" CornerRadius="19">
-                        <Border.Background>
-                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
-                                <GradientStop Offset="0" Color="#1A4ADE80"/>
-                                <GradientStop Offset="1" Color="#454ADE80"/>
-                            </LinearGradientBrush>
-                        </Border.Background>
-                        <Border.Transitions>
-                            <Transitions>
-                                <DoubleTransition Property="Width" Duration="0:0:0.2"/>
-                            </Transitions>
-                        </Border.Transitions>
-                        <Border.Width>
-                            <MultiBinding Converter="{StaticResource ProgressWidth}">
-                                <Binding ElementName="CurrentFrame" Path="Bounds.Width"/>
-                                <Binding Path="Progress"/>
-                            </MultiBinding>
-                        </Border.Width>
-                    </Border>
+                    <!-- Progress is the border's own background, so the corner radius
+                         clips it at every width -->
+                    <Border CornerRadius="19"
+                            Background="{Binding Progress, Converter={StaticResource ProgressBrush}}"/>
                     <TextBlock Text="{Binding CurrentSongName}"
                                FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=58}"
                                FontWeight="Bold" Foreground="#FFFFFF"
