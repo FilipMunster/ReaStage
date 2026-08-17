@@ -113,9 +113,13 @@ monitoru. Hlavní okno = stage view, vlevo nahoře hamburger ikona otevírajíc�
 - **Následující písně** pod ní: výraznější než předchozí, méně než aktuální.
 - **Počet zobrazených písní se nenastavuje** — zobrazí se tolik, kolik se vejde na
   obrazovku. Oba seznamy jsou v ořezávajícím kontejneru a rostou od aktuální písně
-  ven (předchozí zarovnané dolů, následující nahoru), takže se ořízne to nejvzdálenější
-  a karta aktuální písně zůstane vždy uprostřed. ViewModel dodává jen horní mez
-  (`MaxSongsAround`), víc než se vejde na jakoukoli obrazovku.
+  ven, takže se ořízne to nejvzdálenější a karta zůstane uprostřed. ViewModel dodává
+  jen horní mez (`MaxSongsAround`), víc než se vejde na jakoukoli obrazovku.
+  - Následující písně: běžný `StackPanel` zarovnaný nahoru, přebytek přeteče dolů.
+  - Předchozí písně: vlastní `BottomStackPanel`. **`VerticalAlignment="Bottom"` na to
+    nestačí** — zarovnání umí prvek jen posunout uvnitř přiděleného místa, takže
+    obsah vyšší než kontejner se vyskládá odshora a ořízne se zespodu, tedy přesně
+    ty písně, které mají být vidět. Panel proto skládá od spodní hrany nahoru.
 - Stav „mezi písničkami": aktuální rámeček ukazuje připravenou (další) píseň
   bez progressu, vizuálně odlišený stav (např. slabší rámeček).
 - Chybějící písně (region ID nenalezen) se ve stage view nezobrazují — koordinátor

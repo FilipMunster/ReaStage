@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:ReaStage.ViewModels"
              xmlns:conv="using:ReaStage.Converters"
+             xmlns:controls="using:ReaStage.Controls"
              mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="720"
              x:Class="ReaStage.Views.StageView"
              x:Name="StageRoot"
@@ -100,13 +101,18 @@
         <Style Selector="Path.transportIcon">
             <Setter Property="Fill" Value="{StaticResource TextPrimaryBrush}"/>
             <Setter Property="Width" Value="26"/>
-            <Setter Property="Height" Value="26"/>
+            <Setter Property="Height" Value="18"/>
             <Setter Property="Stretch" Value="Uniform"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
         <Style Selector="Button.transport">
             <Setter Property="Focusable" Value="False"/>
             <Setter Property="Width" Value="84"/>
             <Setter Property="Height" Value="56"/>
+            <!-- Fluent's default button padding is taller at the bottom, which pushed
+                 the drawn icons off centre -->
+            <Setter Property="Padding" Value="0"/>
             <Setter Property="Opacity" Value="0.35"/>
             <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
             <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
@@ -131,7 +137,12 @@
             <!-- Previous songs grow upwards from the current one; whatever no longer
                  fits is clipped at the top instead of pushing the card away -->
             <Panel Grid.Row="0" ClipToBounds="True">
-                <ItemsControl ItemsSource="{Binding PreviousSongs}" VerticalAlignment="Bottom">
+                <ItemsControl ItemsSource="{Binding PreviousSongs}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <controls:BottomStackPanel/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:StageSongItem">
                             <Border Classes="songBox prevSong" Classes.armed="{Binding IsArmed}" Tapped="OnSongTapped">
