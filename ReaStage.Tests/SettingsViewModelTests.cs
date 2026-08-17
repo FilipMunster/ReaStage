@@ -33,12 +33,12 @@ public class SettingsViewModelTests
     [Fact]
     public void Load_ShowsCurrentValues()
     {
-        settingsService.Settings.PreviousSongsShown = 5;
+        settingsService.Settings.PreviousThresholdSeconds = 5;
         settingsService.Settings.Keys.PlayPause = "P";
 
         SettingsViewModel viewModel = CreateLoadedViewModel();
 
-        Assert.Equal("5", viewModel.PreviousSongsShown);
+        Assert.Equal("5", viewModel.PreviousThresholdSeconds);
         Assert.Equal("P", viewModel.PlayPauseKey);
     }
 
@@ -50,14 +50,12 @@ public class SettingsViewModelTests
         viewModel.Closed += (_, _) => closed = true;
 
         viewModel.PlayPauseKey = "P";
-        viewModel.NextSongsShown = "7";
         viewModel.PreviousThresholdSeconds = "2,5";
         viewModel.SaveCommand.Execute(null);
 
         Assert.True(closed);
         Assert.Equal(1, settingsService.SaveCount);
         Assert.Equal("P", settingsService.Settings.Keys.PlayPause);
-        Assert.Equal(7, settingsService.Settings.NextSongsShown);
         Assert.Equal(2.5, settingsService.Settings.PreviousThresholdSeconds);
         Assert.Equal(string.Empty, viewModel.ErrorMessage);
     }
@@ -96,11 +94,11 @@ public class SettingsViewModelTests
         bool closed = false;
         viewModel.Closed += (_, _) => closed = true;
 
-        viewModel.NextSongsShown = "9";
+        viewModel.PreviousThresholdSeconds = "9";
         viewModel.BackCommand.Execute(null);
 
         Assert.True(closed);
         Assert.Equal(0, settingsService.SaveCount);
-        Assert.Equal(3, settingsService.Settings.NextSongsShown);
+        Assert.Equal(3.0, settingsService.Settings.PreviousThresholdSeconds);
     }
 }

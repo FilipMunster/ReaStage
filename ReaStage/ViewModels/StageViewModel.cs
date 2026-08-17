@@ -15,6 +15,10 @@ public partial class StageViewModel : ViewModelBase
     // How long an "armed" song stays armed before the second click must confirm
     private static readonly TimeSpan ArmTimeout = TimeSpan.FromSeconds(4);
 
+    // The stage view shows as many neighbouring songs as fit and clips the rest, so
+    // this only has to exceed what the tallest screen could ever display
+    private const int MaxSongsAround = 30;
+
     private readonly IPlaybackCoordinator playback;
     private readonly IRegionCatalog regionCatalog;
     private readonly ISettingsService settingsService;
@@ -174,7 +178,6 @@ public partial class StageViewModel : ViewModelBase
         IReadOnlyList<ResolvedPlaylistItem> items = playback.ActiveItems;
         int index = playback.CurrentIndex;
         ReaperPosition position = playback.Position;
-        AppSettings settings = settingsService.Settings;
 
         if (index >= 0)
         {
@@ -185,8 +188,8 @@ public partial class StageViewModel : ViewModelBase
             Progress = ComputeProgress(position.PositionSeconds, current);
             UpdateSongTimes(current, position);
 
-            int previousCount = Math.Min(settings.PreviousSongsShown, index);
-            int nextCount = Math.Min(settings.NextSongsShown, items.Count - index - 1);
+            int previousCount = Math.Min(MaxSongsAround, index);
+            int nextCount = Math.Min(MaxSongsAround, items.Count - index - 1);
             PreviousSongs = KeepOrBuild(PreviousSongs, items, index - previousCount, previousCount);
             NextSongs = KeepOrBuild(NextSongs, items, index + 1, nextCount);
         }
@@ -198,7 +201,7 @@ public partial class StageViewModel : ViewModelBase
             Progress = 0;
             ClearSongTimes();
             PreviousSongs = PreviousSongs.Count == 0 ? PreviousSongs : [];
-            NextSongs = KeepOrBuild(NextSongs, items, 0, Math.Min(settings.NextSongsShown, items.Count));
+            NextSongs = KeepOrBuild(NextSongs, items, 0, Math.Min(MaxSongsAround, items.Count));
         }
 
         BpmText = StageStats.FormatBpm(position.TempoBpm);

@@ -79,23 +79,19 @@
             <Border Classes="card">
                 <StackPanel>
                     <TextBlock Classes="section" Text="ZOBRAZENÍ"/>
-                    <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
-                        <TextBlock Grid.Row="0" Classes="label" Text="Předchozích písní"/>
-                        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding PreviousSongsShown}"/>
-                        <TextBlock Grid.Row="1" Classes="label" Text="Následujících písní"/>
-                        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding NextSongsShown}"/>
-                        <TextBlock Grid.Row="2" Classes="label" Text="Práh šipky zpět (s)"/>
-                        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding PreviousThresholdSeconds}"/>
-                        <TextBlock Grid.Row="3" Classes="label" Text="Velikost písma (%)"/>
-                        <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal" Spacing="12">
+                    <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto">
+                        <TextBlock Grid.Row="0" Classes="label" Text="Práh šipky zpět (s)"/>
+                        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding PreviousThresholdSeconds}"/>
+                        <TextBlock Grid.Row="1" Classes="label" Text="Velikost písma (%)"/>
+                        <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="12">
                             <Slider Width="220" Minimum="50" Maximum="200"
                                     TickFrequency="10" IsSnapToTickEnabled="True"
                                     Value="{Binding FontScalePercent}" VerticalAlignment="Center"/>
                             <TextBlock Text="{Binding FontScalePercent, StringFormat={}{0:0} %}"
                                        Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
                         </StackPanel>
-                        <TextBlock Grid.Row="4" Classes="label" Text="Vizuální metronom"/>
-                        <ToggleSwitch Grid.Row="4" Grid.Column="1" IsChecked="{Binding ShowMetronome}"/>
+                        <TextBlock Grid.Row="2" Classes="label" Text="Vizuální metronom"/>
+                        <ToggleSwitch Grid.Row="2" Grid.Column="1" IsChecked="{Binding ShowMetronome}"/>
                     </Grid>
                 </StackPanel>
             </Border>

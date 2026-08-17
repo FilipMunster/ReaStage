@@ -85,8 +85,6 @@ Odebírá `IReaperClient.PositionChanged` a drží aplikační stav:
 // %AppData%/ReaStage/settings.json
 {
   "keys": { "playPause": "Space", "previous": "Left", "next": "Right" },
-  "previousSongsShown": 2,
-  "nextSongsShown": 3,
   "previousThresholdSeconds": 3.0,
   "regionsPollSeconds": 10,
   "fontScalePercent": 100,
@@ -111,9 +109,13 @@ monitoru. Hlavní okno = stage view, vlevo nahoře hamburger ikona otevírajíc�
 - **Aktuální píseň:** velké písmo, barevný rámeček. Pozadí rámečku se zleva plní
   (šedý progress) podle pozice v písni — `Border` + `Rectangle` s šířkou
   úměrnou progressu.
-- **Předchozí písně** nad ní: menší písmo, nejméně výrazné. Počet dle nastavení.
+- **Předchozí písně** nad ní: menší písmo, nejméně výrazné.
 - **Následující písně** pod ní: výraznější než předchozí, méně než aktuální.
-  Počet dle nastavení.
+- **Počet zobrazených písní se nenastavuje** — zobrazí se tolik, kolik se vejde na
+  obrazovku. Oba seznamy jsou v ořezávajícím kontejneru a rostou od aktuální písně
+  ven (předchozí zarovnané dolů, následující nahoru), takže se ořízne to nejvzdálenější
+  a karta aktuální písně zůstane vždy uprostřed. ViewModel dodává jen horní mez
+  (`MaxSongsAround`), víc než se vejde na jakoukoli obrazovku.
 - Stav „mezi písničkami": aktuální rámeček ukazuje připravenou (další) píseň
   bez progressu, vizuálně odlišený stav (např. slabší rámeček).
 - Chybějící písně (region ID nenalezen) se ve stage view nezobrazují — koordinátor
@@ -122,7 +124,7 @@ monitoru. Hlavní okno = stage view, vlevo nahoře hamburger ikona otevírajíc�
 ### 3.2 Postranní panel (hamburger)
 
 Tři tlačítka:
-1. **Nastavení** — klávesy, počty zobrazených písní, práh šipky ←, porty/host.
+1. **Nastavení** — klávesy, práh šipky ←, velikost písma, metronom, porty/host, web.
 2. **Editor playlistů**
 3. **Volba aktuálního playlistu** — seznam playlistů; před přepnutím potvrzovací
    dialog.

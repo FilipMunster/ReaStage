@@ -23,8 +23,6 @@ public class AppSettings
     }
 
     public KeySettings Keys { get; set; } = new();
-    public int PreviousSongsShown { get; set; } = 2;
-    public int NextSongsShown { get; set; } = 3;
     public double PreviousThresholdSeconds { get; set; } = 3.0;
     public int RegionsPollSeconds { get; set; } = 10;
 

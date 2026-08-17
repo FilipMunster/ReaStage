@@ -52,12 +52,6 @@ public partial class SettingsViewModel : ViewModelBase
     private string webPort = string.Empty;
 
     [ObservableProperty]
-    private string previousSongsShown = string.Empty;
-
-    [ObservableProperty]
-    private string nextSongsShown = string.Empty;
-
-    [ObservableProperty]
     private string previousThresholdSeconds = string.Empty;
 
     [ObservableProperty]
@@ -155,8 +149,6 @@ public partial class SettingsViewModel : ViewModelBase
         PlayPauseKey = settings.Keys.PlayPause;
         PreviousKey = settings.Keys.Previous;
         NextKey = settings.Keys.Next;
-        PreviousSongsShown = settings.PreviousSongsShown.ToString(CultureInfo.InvariantCulture);
-        NextSongsShown = settings.NextSongsShown.ToString(CultureInfo.InvariantCulture);
         PreviousThresholdSeconds = settings.PreviousThresholdSeconds.ToString(CultureInfo.InvariantCulture);
         RegionsPollSeconds = settings.RegionsPollSeconds.ToString(CultureInfo.InvariantCulture);
         FontScalePercent = settings.FontScalePercent;
@@ -176,8 +168,6 @@ public partial class SettingsViewModel : ViewModelBase
             || !TryParseGesture(PreviousKey, "Předchozí")
             || !TryParseGesture(NextKey, "Další")
             || !ValidateNoDuplicateKeys()
-            || !TryParseInt(PreviousSongsShown, 0, 20, "Počet předchozích písní", out int previousShown)
-            || !TryParseInt(NextSongsShown, 0, 20, "Počet následujících písní", out int nextShown)
             || !TryParseDouble(PreviousThresholdSeconds, 0, 60, "Práh šipky zpět", out double threshold)
             || !TryParseInt(RegionsPollSeconds, 1, 3600, "Interval aktualizace regionů", out int pollSeconds)
             || !TryParseHost(ReaperHost)
@@ -192,8 +182,6 @@ public partial class SettingsViewModel : ViewModelBase
         settings.Keys.PlayPause = PlayPauseKey.Trim();
         settings.Keys.Previous = PreviousKey.Trim();
         settings.Keys.Next = NextKey.Trim();
-        settings.PreviousSongsShown = previousShown;
-        settings.NextSongsShown = nextShown;
         settings.PreviousThresholdSeconds = threshold;
         settings.RegionsPollSeconds = pollSeconds;
         settings.FontScalePercent = (int)Math.Round(Math.Clamp(FontScalePercent, 50, 200));
