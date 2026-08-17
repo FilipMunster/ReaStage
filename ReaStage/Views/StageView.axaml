@@ -95,11 +95,18 @@
 
         <!-- Bottom transport bar: dim by default, highlights on hover. Not focusable
              so a transport key cannot re-trigger the button that has focus. -->
+        <!-- Icons are drawn, not typed: Inter has no transport glyphs, so the font
+             fallback measured them wrong until a hover forced a re-layout -->
+        <Style Selector="Path.transportIcon">
+            <Setter Property="Fill" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="Width" Value="26"/>
+            <Setter Property="Height" Value="26"/>
+            <Setter Property="Stretch" Value="Uniform"/>
+        </Style>
         <Style Selector="Button.transport">
             <Setter Property="Focusable" Value="False"/>
             <Setter Property="Width" Value="84"/>
             <Setter Property="Height" Value="56"/>
-            <Setter Property="FontSize" Value="26"/>
             <Setter Property="Opacity" Value="0.35"/>
             <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
             <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
@@ -121,17 +128,20 @@
         <!-- Bottom margin reserves room for the status bar -->
         <Grid RowDefinitions="*,Auto,*" Margin="48,24,48,92">
 
-            <!-- Previous songs, closest to the current song at the bottom -->
-            <ItemsControl Grid.Row="0" ItemsSource="{Binding PreviousSongs}" VerticalAlignment="Bottom">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="vm:StageSongItem">
-                        <Border Classes="songBox prevSong" Classes.armed="{Binding IsArmed}" Tapped="OnSongTapped">
-                            <TextBlock Text="{Binding Name}"
-                                       FontSize="{Binding #StageRoot.((vm:StageViewModel)DataContext).FontScale, Converter={StaticResource FontScale}, ConverterParameter=22}"/>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+            <!-- Previous songs grow upwards from the current one; whatever no longer
+                 fits is clipped at the top instead of pushing the card away -->
+            <Panel Grid.Row="0" ClipToBounds="True">
+                <ItemsControl ItemsSource="{Binding PreviousSongs}" VerticalAlignment="Bottom">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:StageSongItem">
+                            <Border Classes="songBox prevSong" Classes.armed="{Binding IsArmed}" Tapped="OnSongTapped">
+                                <TextBlock Text="{Binding Name}"
+                                           FontSize="{Binding #StageRoot.((vm:StageViewModel)DataContext).FontScale, Converter={StaticResource FontScale}, ConverterParameter=22}"/>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Panel>
 
             <!-- Current song with progress fill; tapping the card is Play/Pause -->
             <Border Grid.Row="1" x:Name="CurrentFrame"
@@ -177,17 +187,19 @@
                 </Panel>
             </Border>
 
-            <!-- Upcoming songs -->
-            <ItemsControl Grid.Row="2" ItemsSource="{Binding NextSongs}" VerticalAlignment="Top">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="vm:StageSongItem">
-                        <Border Classes="songBox nextSong" Classes.armed="{Binding IsArmed}" Tapped="OnSongTapped">
-                            <TextBlock Text="{Binding Name}"
-                                       FontSize="{Binding #StageRoot.((vm:StageViewModel)DataContext).FontScale, Converter={StaticResource FontScale}, ConverterParameter=32}"/>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+            <!-- Upcoming songs, clipped at the bottom the same way -->
+            <Panel Grid.Row="2" ClipToBounds="True">
+                <ItemsControl ItemsSource="{Binding NextSongs}" VerticalAlignment="Top">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:StageSongItem">
+                            <Border Classes="songBox nextSong" Classes.armed="{Binding IsArmed}" Tapped="OnSongTapped">
+                                <TextBlock Text="{Binding Name}"
+                                           FontSize="{Binding #StageRoot.((vm:StageViewModel)DataContext).FontScale, Converter={StaticResource FontScale}, ConverterParameter=32}"/>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Panel>
         </Grid>
 
         <!-- Bottom bar: everything on one row, transport centred on the window -->
@@ -247,9 +259,18 @@
                  not between the two groups -->
             <StackPanel Orientation="Horizontal" Spacing="20"
                         HorizontalAlignment="Center" VerticalAlignment="Center">
-                <Button Classes="transport" Content="⏮" Command="{Binding PreviousCommand}"/>
-                <Button Classes="transport" Content="⏯" Command="{Binding PlayPauseCommand}"/>
-                <Button Classes="transport" Content="⏭" Command="{Binding NextCommand}"/>
+                <Button Classes="transport" Command="{Binding PreviousCommand}">
+                    <Path Classes="transportIcon"
+                          Data="M3,5 L5.5,5 L5.5,19 L3,19 Z M14,5 L14,19 L6.5,12 Z M22,5 L22,19 L14.5,12 Z"/>
+                </Button>
+                <Button Classes="transport" Command="{Binding PlayPauseCommand}">
+                    <Path Classes="transportIcon"
+                          Data="M3,5 L3,19 L13,12 Z M15.5,5 L18,5 L18,19 L15.5,19 Z M19.5,5 L22,5 L22,19 L19.5,19 Z"/>
+                </Button>
+                <Button Classes="transport" Command="{Binding NextCommand}">
+                    <Path Classes="transportIcon"
+                          Data="M2,5 L2,19 L9.5,12 Z M10,5 L10,19 L17.5,12 Z M18.5,5 L21,5 L21,19 L18.5,19 Z"/>
+                </Button>
             </StackPanel>
         </Panel>
 
