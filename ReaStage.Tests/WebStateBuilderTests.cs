@@ -30,9 +30,7 @@ public class WebStateBuilderTests
         Assert.True(state.IsPlaying);
         Assert.Equal("2/3", state.Order);
         Assert.Equal("0:40", state.Elapsed);
-        Assert.Equal("21.1", state.ElapsedBeats);
         Assert.Equal("−0:50", state.Remaining);
-        Assert.Equal("−25.0", state.RemainingBeats); // 50 s at 120 BPM 4/4 = 25 bars
         // 50 s left of Two + 90 s of Three = 2:20
         Assert.Equal("2:20", state.RemainingPlaylist);
         Assert.Equal("20:02", state.EndEstimate);

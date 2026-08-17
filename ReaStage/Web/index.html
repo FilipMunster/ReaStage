@@ -76,7 +76,6 @@
     margin-top: 14px; font-size: 26px; font-weight: 600; color: var(--text);
     z-index: 1; position: relative;
   }
-  .times .beats { font-size: 17px; font-weight: 500; color: var(--text-dim); }
   #offline {
     position: fixed; inset: 0; z-index: 10; display: none;
     align-items: center; justify-content: center;
@@ -151,8 +150,7 @@
       var fill = document.createElement("div"); fill.className = "fill";
       var name = document.createElement("div"); name.className = "name"; name.textContent = songs[i].name;
       var times = document.createElement("div"); times.className = "times";
-      times.innerHTML = '<span><span class="clock left"></span> <span class="beats left"></span></span>' +
-                        '<span><span class="clock right"></span> <span class="beats right"></span></span>';
+      times.innerHTML = '<span class="clock left"></span><span class="clock right"></span>';
       box.appendChild(fill); box.appendChild(name); box.appendChild(times);
       list.appendChild(box);
     }
@@ -180,9 +178,7 @@
       // Times belong to the current song only — a song that stops being current
       // would otherwise keep the values it had
       box.querySelector(".clock.left").textContent = isCurrent ? s.elapsed : "";
-      box.querySelector(".beats.left").textContent = isCurrent ? s.elapsedBeats : "";
       box.querySelector(".clock.right").textContent = isCurrent ? s.remaining : "";
-      box.querySelector(".beats.right").textContent = isCurrent ? s.remainingBeats : "";
     }
     applyArmed();
 

@@ -25,40 +25,6 @@ public static class StageStats
             : $"{minutes}:{secs:00}";
     }
 
-    // Position inside a song as "bar.beat", 1-based like REAPER's own readout
-    public static string? FormatBarBeatPosition(double seconds, double tempo, int tsNumerator, int tsDenominator)
-    {
-        return FormatBarBeat(seconds, tempo, tsNumerator, tsDenominator, firstIndex: 1);
-    }
-
-    // Length of a stretch of music: whole bars and beats counted from zero, so two
-    // bars left reads "2.0" and not "3.1"
-    public static string? FormatBarBeatDuration(double seconds, double tempo, int tsNumerator, int tsDenominator)
-    {
-        return FormatBarBeat(seconds, tempo, tsNumerator, tsDenominator, firstIndex: 0);
-    }
-
-    // Assumes constant tempo; null when the tempo is not known yet
-    private static string? FormatBarBeat(double seconds, double tempo, int tsNumerator, int tsDenominator, int firstIndex)
-    {
-        if (tempo <= 0 || tsNumerator <= 0 || tsDenominator <= 0)
-        {
-            return null;
-        }
-
-        if (seconds < 0)
-        {
-            seconds = 0;
-        }
-
-        double beatSeconds = 4.0 / tsDenominator * (60.0 / tempo);
-        double totalBeats = seconds / beatSeconds;
-        int bar = (int)(totalBeats / tsNumerator);
-        int beat = (int)(totalBeats - bar * tsNumerator);
-
-        return $"{bar + firstIndex}.{beat + firstIndex}";
-    }
-
     // "4/4", empty when REAPER has not reported a time signature yet
     public static string FormatTimeSignature(int numerator, int denominator)
     {

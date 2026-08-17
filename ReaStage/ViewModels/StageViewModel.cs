@@ -40,19 +40,12 @@ public partial class StageViewModel : ViewModelBase
     [ObservableProperty]
     private bool isPlaying;
 
-    // Times in the current song card: elapsed (left) and remaining (right),
-    // each shown as both mm:ss and bar.beat
+    // Times in the current song card: elapsed (left) and remaining (right)
     [ObservableProperty]
     private string elapsedText = string.Empty;
 
     [ObservableProperty]
-    private string elapsedBeatsText = string.Empty;
-
-    [ObservableProperty]
     private string remainingText = string.Empty;
-
-    [ObservableProperty]
-    private string remainingBeatsText = string.Empty;
 
     // Bottom status bar
     [ObservableProperty]
@@ -235,11 +228,6 @@ public partial class StageViewModel : ViewModelBase
 
         ElapsedText = StageStats.FormatClock(elapsed);
         RemainingText = "−" + StageStats.FormatClock(remaining);
-
-        string? elapsedBeats = StageStats.FormatBarBeatPosition(elapsed, position.TempoBpm, position.TimeSigNumerator, position.TimeSigDenominator);
-        string? remainingBeats = StageStats.FormatBarBeatDuration(remaining, position.TempoBpm, position.TimeSigNumerator, position.TimeSigDenominator);
-        ElapsedBeatsText = elapsedBeats ?? string.Empty;
-        RemainingBeatsText = remainingBeats is null ? string.Empty : "−" + remainingBeats;
     }
 
     // The dots follow REAPER's reported beat directly — no local clock, no smoothing,
@@ -278,8 +266,6 @@ public partial class StageViewModel : ViewModelBase
     {
         ElapsedText = string.Empty;
         RemainingText = string.Empty;
-        ElapsedBeatsText = string.Empty;
-        RemainingBeatsText = string.Empty;
     }
 
     private void UpdateEndEstimate()

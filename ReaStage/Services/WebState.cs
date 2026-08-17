@@ -17,9 +17,7 @@ public sealed record WebState(
     string Bpm,
     string Order,
     string Elapsed,
-    string ElapsedBeats,
     string Remaining,
-    string RemainingBeats,
     string RemainingPlaylist,
     string EndEstimate);
 
@@ -38,9 +36,7 @@ public static class WebStateBuilder
 
         double progress = 0;
         string elapsed = string.Empty;
-        string elapsedBeats = string.Empty;
         string remaining = string.Empty;
-        string remainingBeats = string.Empty;
 
         if (index >= 0)
         {
@@ -55,11 +51,6 @@ public static class WebStateBuilder
 
             elapsed = StageStats.FormatClock(elapsedSeconds);
             remaining = "−" + StageStats.FormatClock(remainingSeconds);
-
-            string? eb = StageStats.FormatBarBeatPosition(elapsedSeconds, position.TempoBpm, position.TimeSigNumerator, position.TimeSigDenominator);
-            string? rb = StageStats.FormatBarBeatDuration(remainingSeconds, position.TempoBpm, position.TimeSigNumerator, position.TimeSigDenominator);
-            elapsedBeats = eb ?? string.Empty;
-            remainingBeats = rb is null ? string.Empty : "−" + rb;
         }
 
         double remainingPlaylistSeconds = StageStats.RemainingPlaylistSeconds(items, index, position.PositionSeconds);
@@ -73,9 +64,7 @@ public static class WebStateBuilder
             Bpm: StageStats.FormatBpm(position.TempoBpm),
             Order: StageStats.OrderText(index, items.Count),
             Elapsed: elapsed,
-            ElapsedBeats: elapsedBeats,
             Remaining: remaining,
-            RemainingBeats: remainingBeats,
             RemainingPlaylist: StageStats.FormatClock(remainingPlaylistSeconds),
             EndEstimate: StageStats.FormatEndEstimate(now, remainingPlaylistSeconds));
     }

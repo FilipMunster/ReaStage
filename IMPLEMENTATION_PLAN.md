@@ -192,7 +192,8 @@ Tři tlačítka:
 | Dlouhé takty vs. tlačítka | U vyšších čitatelů (7/8, 12/8) je řada teček širší než místo nalevo od vystředěných tlačítek. **Řešeno překryvem:** tečky prostě pokračují pod tlačítky, která jsou poloprůhledná (`Opacity 0.35`, na hover 1 nad 12% bílou), takže zůstanou čitelné. Žádné zmenšování ani seskupování teček. |
 | Scrubbing pozice | **Zamítnuto** (implementováno a následně odstraněno). Tažení myší nad kartou aktuální písně ani akord Mezerník + šipka se v praxi neosvědčily; Mezerník tak zůstává u chování z kapitoly 1 (play/pause na stisk, žádná vlastní logika). |
 | Klik na jinou píseň | Dvoukrokově: první klik píseň „odjistí" (zvýraznění), druhý klik potvrdí skok (Stop + SetPosition na začátek písně). Pojistka proti překliku na pódiu. |
-| Časy v kartě aktuální písně | Čas od začátku i zbývající do konce, každý **současně ve dvou formátech**: `mm:ss` i `bar:beat`. Nahrazují dosavadní jediný údaj pozice ve formátu REAPERu. |
+| Časy v kartě aktuální písně | Čas od začátku (vlevo dole) a zbývající do konce s prefixem minus (vpravo dole), ve formátu `mm:ss`. Nahrazují dosavadní jediný údaj pozice ve formátu REAPERu. |
+| Pozice v taktech (bar:beat) | **Zamítnuto** (implementováno a následně odstraněno). Počítala se z uplynulého času a odvozeného tempa, zatímco metronom bere dobu přímo od REAPERu — údaje se proto rozcházely a rozdíl se v písni kumuloval (chyba měření tempa ±0,4 BPM ≈ 1 doba po dvou minutách). Přesně by to šlo dopočítat jen z taktu začátku písně, který REAPER pro jinou než aktuální pozici nevystavuje. Takty tedy zůstávají jen v metronomu, kde jsou brané přímo z `/beat/str`. |
 | BPM | Ve statistikách se zobrazuje aktuální tempo (BPM). |
 | Taktový rozměr | Ve spodní liště vedle BPM (`4/4`, `6/8`). Zdroj je HTTP `BEATPOS` — OSC taktový rozměr neposílá, takže se obnovuje při startu a při každém skoku na píseň (změna uprostřed písně se projeví až u další). |
 | Vizuální metronom | Ve spodní liště tolik teček, kolik je dob v taktu. Plní se kumulativně 1→N a na jedničce se vynulují; první doba zlatá (`#FBBF24`), ostatní zelené (akcent). Zarovnáno vlevo, aby tečky při změně taktu nepřeskakovaly. **Bez animací a bez vlastního časovače** — kreslí se přímo doba hlášená REAPERem (`/beat/str`), aby latence proti audio metronomu byla co nejmenší. Lze vypnout v nastavení (`showMetronome`). |
@@ -240,11 +241,9 @@ Tři tlačítka:
 ### 5.4 Fáze 9 — Statistiky a časy
 
 - **V kartě aktuální písně:** vlevo dole čas od začátku písně (`pozice − start`),
-  vpravo dole zbývající čas s prefixem minus (`−(end − pozice)`). Každý údaj
-  **současně ve dvou formátech**: `mm:ss` i `bar:beat` (počítáno z `TempoBpm`
-  a taktového rozměru — REAPER hlásí bar:beat jen absolutně od začátku projektu,
-  ne v rámci písně). Nahrazuje dosavadní centrovaný údaj pozice. Čas od začátku je
-  pozice v písni (1-based), zbývající čas je délka úseku (počítá se od nuly).
+  vpravo dole zbývající čas s prefixem minus (`−(end − pozice)`), oba `mm:ss`.
+  Nahrazuje dosavadní centrovaný údaj pozice. Zobrazení v taktech bylo zavrženo
+  (viz rozhodnutí v 5.1).
 - **Aktuální BPM** (z `TempoBpm`) — ve statistikách (spodní lišta nebo karta).
 - **Spodní stavová lišta stage view:**
   - pořadí: `N / M` (číslo aktuální písně / počet písní playlistu);

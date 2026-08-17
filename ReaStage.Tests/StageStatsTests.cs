@@ -17,31 +17,6 @@ public class StageStatsTests
     }
 
     [Theory]
-    [InlineData(0, "1.1")]   // song start
-    [InlineData(0.5, "1.2")] // one beat at 120 BPM 4/4
-    [InlineData(2, "2.1")]   // one bar
-    public void FormatBarBeatPosition_IsOneBasedLikeReaper(double seconds, string expected)
-    {
-        Assert.Equal(expected, StageStats.FormatBarBeatPosition(seconds, 120, 4, 4));
-    }
-
-    [Theory]
-    [InlineData(0, "0.0")]   // nothing left
-    [InlineData(0.5, "0.1")] // one beat left
-    [InlineData(4, "2.0")]   // two bars left
-    public void FormatBarBeatDuration_CountsFromZero(double seconds, string expected)
-    {
-        Assert.Equal(expected, StageStats.FormatBarBeatDuration(seconds, 120, 4, 4));
-    }
-
-    [Fact]
-    public void FormatBarBeat_WithoutTempo_ReturnsNull()
-    {
-        Assert.Null(StageStats.FormatBarBeatPosition(10, 0, 4, 4));
-        Assert.Null(StageStats.FormatBarBeatDuration(10, 0, 4, 4));
-    }
-
-    [Theory]
     [InlineData(4, 4, "4/4")]
     [InlineData(6, 8, "6/8")]
     [InlineData(0, 0, "")] // not reported by REAPER yet
