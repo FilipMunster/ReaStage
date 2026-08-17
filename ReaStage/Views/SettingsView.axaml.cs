@@ -11,44 +11,17 @@ public partial class SettingsView : UserControl
     {
         InitializeComponent();
 
-        // Tunnel so a captured key is taken before anything else reacts to it
-        AddHandler(KeyDownEvent, OnCaptureKeyDown, RoutingStrategies.Tunnel);
+        // The captured key itself is taken by the window handler. These only stop
+        // the keystroke from also reaching a text box that happens to hold focus.
         AddHandler(KeyUpEvent, OnCaptureSwallow, RoutingStrategies.Tunnel);
         AddHandler(TextInputEvent, OnCaptureSwallow, RoutingStrategies.Tunnel);
     }
 
-    // While capturing, no other control may see the keystroke — otherwise the key
-    // being assigned also lands in whichever text box holds focus
     private void OnCaptureSwallow(object? sender, RoutedEventArgs e)
     {
         if (DataContext is SettingsViewModel viewModel && viewModel.IsCapturing)
         {
             e.Handled = true;
         }
-    }
-
-    private void OnCaptureKeyDown(object? sender, KeyEventArgs e)
-    {
-        if (DataContext is not SettingsViewModel viewModel || !viewModel.IsCapturing)
-        {
-            return;
-        }
-
-        // Wait for a real key; Escape (cancel) is handled at the window level
-        if (e.Key == Key.Escape || IsModifierKey(e.Key))
-        {
-            return;
-        }
-
-        viewModel.ApplyCapturedKey(new KeyGesture(e.Key, e.KeyModifiers));
-        e.Handled = true;
-    }
-
-    private static bool IsModifierKey(Key key)
-    {
-        return key is Key.LeftCtrl or Key.RightCtrl
-            or Key.LeftShift or Key.RightShift
-            or Key.LeftAlt or Key.RightAlt
-            or Key.LWin or Key.RWin;
     }
 }

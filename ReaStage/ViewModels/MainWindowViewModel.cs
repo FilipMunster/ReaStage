@@ -81,6 +81,18 @@ public partial class MainWindowViewModel : ViewModelBase
             return Stage.ClearArm();
         }
 
+        // Driven from the window: the key buttons are not focusable, so the event
+        // would never tunnel down into the settings view on its own
+        if (CurrentPage == Settings && Settings.IsCapturing)
+        {
+            if (!IsModifierKey(e.Key))
+            {
+                Settings.ApplyCapturedKey(new KeyGesture(e.Key, e.KeyModifiers));
+            }
+
+            return true;
+        }
+
         // Transport keys work on the whole stage page, the open side pane included.
         // Letting them fall through there once opened Settings mid-concert, because
         // Space activated the focused menu button. The pane holds no text input, so
@@ -175,6 +187,14 @@ public partial class MainWindowViewModel : ViewModelBase
         playPauseGesture = ParseGesture(keys.PlayPause, Key.Space);
         previousGesture = ParseGesture(keys.Previous, Key.Left);
         nextGesture = ParseGesture(keys.Next, Key.Right);
+    }
+
+    private static bool IsModifierKey(Key key)
+    {
+        return key is Key.LeftCtrl or Key.RightCtrl
+            or Key.LeftShift or Key.RightShift
+            or Key.LeftAlt or Key.RightAlt
+            or Key.LWin or Key.RWin;
     }
 
     private KeyGesture ParseGesture(string gesture, Key fallback)
