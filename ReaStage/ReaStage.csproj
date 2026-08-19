@@ -8,6 +8,14 @@
     <ApplicationIcon>Images\reastage.ico</ApplicationIcon>
   </PropertyGroup>
 
+  <!-- Single source of the version: AssemblyVersion, FileVersion and
+       InformationalVersion are all derived from it by the SDK. -->
+  <PropertyGroup>
+    <Version>1.0.0</Version>
+    <Product>ReaStage</Product>
+    <Description>Pódiový ovladač REAPERu</Description>
+  </PropertyGroup>
+
   <!-- The web server pulls in Microsoft.AspNetCore.App, which a framework-dependent
        build would require on the target machine. Publishing is therefore
        self-contained; plain builds are unaffected. Trimming stays off - Avalonia and
@@ -68,6 +76,11 @@
     </None>
     <None Update="ReaStage.ReaperOSC">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <!-- Lives in the repository root, so it needs Include with an explicit target -->
+    <None Include="..\README.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>README.md</TargetPath>
     </None>
   </ItemGroup>
 </Project>

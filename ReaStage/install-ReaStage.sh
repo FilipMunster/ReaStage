@@ -44,12 +44,12 @@ cp -r "$SCRIPT_DIR"/* "$INSTALL_DIR/"
 chmod +x "$INSTALL_DIR/$EXEC_NAME"
 
 # Create .desktop file for Application Menu
-# (If you add an icon in the future, add line: Icon=/path/to/icon.png)
 echo "Creating Application Menu shortcut..."
 cat <<EOF > "$DESKTOP_FILE"
 [Desktop Entry]
 Type=Application
 Name=ReaStage
+Icon=$INSTALL_DIR/reastage.png
 Comment=ReaStage DAW Controller
 Exec=$INSTALL_DIR/$EXEC_NAME %f
 Terminal=false
