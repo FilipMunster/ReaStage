@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <ApplicationIcon>Images\reastage.ico</ApplicationIcon>
   </PropertyGroup>
 
   <!-- The web server pulls in Microsoft.AspNetCore.App, which a framework-dependent
@@ -18,8 +19,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Models\" />
-    <AvaloniaResource Include="Assets\**" />
     <EmbeddedResource Include="Web\index.html" LogicalName="ReaStage.Web.index.html" />
   </ItemGroup>
 
@@ -55,6 +54,16 @@
 
   <ItemGroup>
     <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Images\reastage.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>reastage.png</TargetPath>
+    </None>
+    <None Update="install-deps.sh">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="install-ReaStage.sh">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="ReaStage.ReaperOSC">
