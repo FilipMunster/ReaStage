@@ -100,6 +100,9 @@ public class PlaybackCoordinatorTests
 
         public Playlist? GetPlaylist(Guid id) => PlaylistsList.FirstOrDefault(p => p.Id == id);
 
+        public string CreateRestorePoint() => throw new NotSupportedException();
+        public void Restore(string restorePoint) => throw new NotSupportedException();
+
         public Playlist CreatePlaylist(string name, IEnumerable<int> regionIds) => throw new NotSupportedException();
         public Playlist DuplicatePlaylist(Guid id) => throw new NotSupportedException();
         public void DeletePlaylist(Guid id) => throw new NotSupportedException();

@@ -20,6 +20,30 @@
             <Setter Property="Width" Value="320"/>
             <Setter Property="BoxShadow" Value="0 12 32 0 #73000000"/>
         </Style>
+        <!-- Round check button marking the active playlist -->
+        <Style Selector="Button.selectPlaylist">
+            <Setter Property="Width" Value="30"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="CornerRadius" Value="15"/>
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource SurfaceBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Button.selectPlaylist Path">
+            <Setter Property="Stroke" Value="#59FFFFFF"/>
+        </Style>
+        <Style Selector="Button.selectPlaylist.active">
+            <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+        </Style>
+        <Style Selector="Button.selectPlaylist.active Path">
+            <Setter Property="Stroke" Value="#0C0D13"/>
+        </Style>
+
         <Style Selector="Border.songItem">
             <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
             <Setter Property="BorderBrush" Value="{StaticResource SurfaceBorderBrush}"/>
@@ -68,10 +92,10 @@
     <Panel>
     <Grid RowDefinitions="Auto,*" Margin="24,16">
         <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="12" Margin="56,0,0,20">
-            <TextBlock Text="Editor playlistů" FontSize="28" FontWeight="Bold" Foreground="#FFFFFF" VerticalAlignment="Center"/>
+            <TextBlock Text="Playlisty" FontSize="28" FontWeight="Bold" Foreground="#FFFFFF" VerticalAlignment="Center"/>
+            <Button Content="Vrátit změny" Command="{Binding RevertChangesCommand}" VerticalAlignment="Center"/>
             <Button Content="Nový playlist" Command="{Binding CreatePlaylistCommand}" VerticalAlignment="Center"/>
             <Button Content="Obnovit z REAPERu" Command="{Binding RefreshRegionsCommand}" VerticalAlignment="Center"/>
-            <Button Content="Zpět" Command="{Binding BackCommand}" VerticalAlignment="Center"/>
         </StackPanel>
 
         <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
@@ -86,13 +110,24 @@
                         <Border Classes="column" DragDrop.AllowDrop="True">
                             <Grid RowDefinitions="Auto,*">
                                 <!-- Column header -->
-                                <Grid x:Name="ColumnHeader" Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,10">
-                                    <TextBlock Grid.Column="0" Text="REAPER" FontSize="18" FontWeight="Bold"
+                                <Grid x:Name="ColumnHeader" Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,10">
+                                    <!-- Makes this playlist the one the stage view plays from -->
+                                    <Button Grid.Column="0" Classes="selectPlaylist"
+                                            Classes.active="{Binding IsActive}"
+                                            ToolTip.Tip="Nastavit jako aktivní"
+                                            Command="{Binding #Root.((vm:PlaylistEditorViewModel)DataContext).SelectPlaylistCommand}"
+                                            CommandParameter="{Binding}">
+                                        <Path Data="M3,8.5 L6.5,12 L13,4" Stretch="Uniform"
+                                              StrokeThickness="2.2" StrokeLineCap="Round" StrokeJoin="Round"
+                                              Width="15" Height="15"/>
+                                    </Button>
+                                    <TextBlock Grid.Column="1" Text="REAPER" FontSize="18" FontWeight="Bold"
                                                Foreground="{StaticResource AccentBrush}" VerticalAlignment="Center"
+                                               Margin="8,0,0,0"
                                                IsVisible="{Binding IsReadOnly}"/>
-                                    <TextBox Grid.Column="0" Text="{Binding Name, UpdateSourceTrigger=LostFocus}"
-                                             FontSize="16" IsVisible="{Binding !IsReadOnly}"/>
-                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" Margin="8,0,0,0"
+                                    <TextBox Grid.Column="1" Text="{Binding Name, UpdateSourceTrigger=LostFocus}"
+                                             FontSize="16" Margin="8,0,0,0" IsVisible="{Binding !IsReadOnly}"/>
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" Margin="8,0,0,0"
                                                 IsVisible="{Binding !IsReadOnly}">
                                         <Button Classes="small" Content="Duplikovat"
                                                 Command="{Binding #Root.((vm:PlaylistEditorViewModel)DataContext).DuplicatePlaylistCommand}"

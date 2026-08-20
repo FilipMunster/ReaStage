@@ -13,6 +13,11 @@ public interface IPlaylistService
     // null = the virtual REAPER playlist (regions in timeline order) is active
     Guid? ActivePlaylistId { get; set; }
 
+    // Every mutation autosaves, so undoing a whole editing session needs a snapshot
+    // taken when it started
+    string CreateRestorePoint();
+    void Restore(string restorePoint);
+
     Playlist? GetPlaylist(Guid id);
     Playlist CreatePlaylist(string name, IEnumerable<int> regionIds);
     Playlist DuplicatePlaylist(Guid id);

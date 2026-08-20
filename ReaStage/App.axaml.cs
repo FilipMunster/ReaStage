@@ -69,7 +69,6 @@ public partial class App : Application
             .AddSingleton<IWebControlServer, WebControlServer>()
             .AddSingleton<StageViewModel>()
             .AddSingleton<SettingsViewModel>()
-            .AddSingleton<PlaylistSelectionViewModel>()
             .AddSingleton<PlaylistEditorViewModel>()
             ;
     }

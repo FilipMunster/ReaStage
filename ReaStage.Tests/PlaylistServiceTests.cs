@@ -217,4 +217,66 @@ public class PlaylistServiceTests : IDisposable
 
         Assert.Equal(5, raised);
     }
+
+    [Fact]
+    public void Restore_UndoesEverythingDoneSinceTheRestorePoint()
+    {
+        PlaylistService service = CreateService();
+        Playlist kept = service.CreatePlaylist("Kept", [1, 2]);
+        string restorePoint = service.CreateRestorePoint();
+
+        service.CreatePlaylist("Added later", [3]);
+        service.RenamePlaylist(kept.Id, "Renamed");
+        service.SetItemDeleted(kept.Id, 0, true);
+        service.MoveItem(kept.Id, 0, 1);
+
+        service.Restore(restorePoint);
+
+        Assert.Single(service.Playlists);
+        Assert.Equal("Kept", service.Playlists[0].Name);
+        Assert.Equal([1, 2], service.Playlists[0].Items.Select(i => i.RegionId));
+        Assert.All(service.Playlists[0].Items, i => Assert.False(i.Deleted));
+    }
+
+    [Fact]
+    public void Restore_AlsoBringsBackTheActivePlaylist()
+    {
+        PlaylistService service = CreateService();
+        Playlist first = service.CreatePlaylist("First", [1]);
+        Playlist second = service.CreatePlaylist("Second", [2]);
+        service.ActivePlaylistId = first.Id;
+        string restorePoint = service.CreateRestorePoint();
+
+        service.ActivePlaylistId = second.Id;
+        service.Restore(restorePoint);
+
+        Assert.Equal(first.Id, service.ActivePlaylistId);
+    }
+
+    [Fact]
+    public void Restore_PersistsAndNotifies()
+    {
+        PlaylistService service = CreateService();
+        string restorePoint = service.CreateRestorePoint();
+        service.CreatePlaylist("Gone after restore", [1]);
+
+        int raised = 0;
+        service.PlaylistsChanged += (_, _) => raised++;
+        service.Restore(restorePoint);
+
+        Assert.Equal(1, raised);
+        Assert.Empty(CreateService().Playlists);
+    }
+
+    [Fact]
+    public void Restore_UnreadablePoint_LeavesPlaylistsAlone()
+    {
+        PlaylistService service = CreateService();
+        service.CreatePlaylist("Untouched", [1]);
+
+        service.Restore("not json at all");
+
+        Assert.Single(service.Playlists);
+        Assert.Equal("Untouched", service.Playlists[0].Name);
+    }
 }

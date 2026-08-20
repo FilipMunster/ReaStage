@@ -30,6 +30,7 @@ public class SettingsViewModelTests
         return viewModel;
     }
 
+
     [Fact]
     public void Load_ShowsCurrentValues()
     {
@@ -43,17 +44,14 @@ public class SettingsViewModelTests
     }
 
     [Fact]
-    public void Save_ValidValues_WritesSettingsAndCloses()
+    public void TrySave_ValidValues_WritesSettings()
     {
         SettingsViewModel viewModel = CreateLoadedViewModel();
-        bool closed = false;
-        viewModel.Closed += (_, _) => closed = true;
 
         viewModel.PlayPauseKey = "P";
         viewModel.PreviousThresholdSeconds = "2,5";
-        viewModel.SaveCommand.Execute(null);
 
-        Assert.True(closed);
+        Assert.True(viewModel.TrySave());
         Assert.Equal(1, settingsService.SaveCount);
         Assert.Equal("P", settingsService.Settings.Keys.PlayPause);
         Assert.Equal(2.5, settingsService.Settings.PreviousThresholdSeconds);
@@ -61,44 +59,51 @@ public class SettingsViewModelTests
     }
 
     [Fact]
-    public void Save_InvalidGesture_ShowsErrorAndDoesNotSave()
+    public void TrySave_InvalidGesture_FailsWithErrorAndDoesNotSave()
     {
         SettingsViewModel viewModel = CreateLoadedViewModel();
-        bool closed = false;
-        viewModel.Closed += (_, _) => closed = true;
 
         viewModel.PlayPauseKey = "NotAKey123";
-        viewModel.SaveCommand.Execute(null);
 
-        Assert.False(closed);
+        Assert.False(viewModel.TrySave());
         Assert.Equal(0, settingsService.SaveCount);
         Assert.Contains("NotAKey123", viewModel.ErrorMessage);
     }
 
     [Fact]
-    public void Save_PortOutOfRange_ShowsErrorAndDoesNotSave()
+    public void TrySave_PortOutOfRange_FailsWithErrorAndDoesNotSave()
     {
         SettingsViewModel viewModel = CreateLoadedViewModel();
 
         viewModel.ReaperHttpPort = "99999";
-        viewModel.SaveCommand.Execute(null);
 
+        Assert.False(viewModel.TrySave());
         Assert.Equal(0, settingsService.SaveCount);
         Assert.Contains("99999", viewModel.ErrorMessage);
     }
 
     [Fact]
-    public void Back_ClosesWithoutSaving()
+    public void RevertChanges_ThrowsAwayEditsAndSavesNothing()
     {
         SettingsViewModel viewModel = CreateLoadedViewModel();
-        bool closed = false;
-        viewModel.Closed += (_, _) => closed = true;
 
         viewModel.PreviousThresholdSeconds = "9";
-        viewModel.BackCommand.Execute(null);
+        viewModel.RevertChangesCommand.Execute(null);
 
-        Assert.True(closed);
+        Assert.Equal("3", viewModel.PreviousThresholdSeconds);
         Assert.Equal(0, settingsService.SaveCount);
         Assert.Equal(3.0, settingsService.Settings.PreviousThresholdSeconds);
+    }
+
+    [Fact]
+    public void RevertChanges_ClearsThePendingError()
+    {
+        SettingsViewModel viewModel = CreateLoadedViewModel();
+        viewModel.ReaperHttpPort = "99999";
+        viewModel.TrySave();
+
+        viewModel.RevertChangesCommand.Execute(null);
+
+        Assert.Equal(string.Empty, viewModel.ErrorMessage);
     }
 }

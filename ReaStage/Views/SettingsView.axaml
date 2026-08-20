@@ -52,7 +52,10 @@
 
     <ScrollViewer>
         <StackPanel Margin="72,20" MaxWidth="680" HorizontalAlignment="Left">
-            <TextBlock Text="Nastavení" FontSize="32" FontWeight="Bold" Foreground="#FFFFFF" Margin="0,0,0,12"/>
+            <StackPanel Orientation="Horizontal" Spacing="16" Margin="0,0,0,12">
+                <TextBlock Text="Nastavení" FontSize="32" FontWeight="Bold" Foreground="#FFFFFF"/>
+                <Button Content="Vrátit změny" Command="{Binding RevertChangesCommand}" VerticalAlignment="Center"/>
+            </StackPanel>
 
             <Border Classes="card">
                 <StackPanel>
@@ -131,10 +134,10 @@
             <TextBlock Text="{Binding ErrorMessage}" Foreground="{StaticResource DangerBrush}" Margin="4,10,0,0"
                        IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
 
-            <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,20,0,24">
-                <Button Content="Uložit" Command="{Binding SaveCommand}" FontSize="16" Padding="28,9"/>
-                <Button Content="Zpět" Command="{Binding BackCommand}" FontSize="16" Padding="28,9"/>
-            </StackPanel>
+            <!-- Changes are applied when the page is left; nothing to confirm here -->
+            <TextBlock Text="Změny se uloží při návratu na hlavní obrazovku (ikona vlevo nahoře nebo Esc)."
+                       Foreground="{StaticResource TextSecondaryBrush}" FontStyle="Italic"
+                       Margin="4,16,0,24"/>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

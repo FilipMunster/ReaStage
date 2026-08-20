@@ -20,7 +20,6 @@ public partial class MainWindowViewModel : ViewModelBase
 
     public StageViewModel Stage { get; }
     public SettingsViewModel Settings { get; }
-    public PlaylistSelectionViewModel PlaylistSelection { get; }
     public PlaylistEditorViewModel PlaylistEditor { get; }
 
     [ObservableProperty]
@@ -34,7 +33,6 @@ public partial class MainWindowViewModel : ViewModelBase
         ISettingsService settingsService,
         StageViewModel stage,
         SettingsViewModel settings,
-        PlaylistSelectionViewModel playlistSelection,
         PlaylistEditorViewModel playlistEditor,
         ILogger<MainWindowViewModel> logger)
     {
@@ -43,17 +41,12 @@ public partial class MainWindowViewModel : ViewModelBase
         this.logger = logger;
         Stage = stage;
         Settings = settings;
-        PlaylistSelection = playlistSelection;
         PlaylistEditor = playlistEditor;
         currentPage = stage;
         logger.LogDebug("MainWindowViewModel created");
 
         ReloadGestures();
         settingsService.SettingsSaved += (_, _) => ReloadGestures();
-
-        Settings.Closed += (_, _) => ShowStage();
-        PlaylistSelection.Closed += (_, _) => ShowStage();
-        PlaylistEditor.Closed += (_, _) => ShowStage();
     }
 
     // Returns true when the key was handled
@@ -74,7 +67,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
             if (CurrentPage != Stage)
             {
-                ShowStage();
+                LeaveCurrentPage();
                 return true;
             }
 
@@ -126,10 +119,32 @@ public partial class MainWindowViewModel : ViewModelBase
         return false;
     }
 
+    // On the stage the icon opens the menu; on the other pages it means "done" —
+    // it applies the changes and goes back
     [RelayCommand]
     private void TogglePane()
     {
+        if (CurrentPage != Stage)
+        {
+            LeaveCurrentPage();
+            return;
+        }
+
         IsPaneOpen = !IsPaneOpen;
+    }
+
+    // Returns false when the page refused to be left, which only happens when the
+    // settings hold an invalid value; the error is already shown on the page
+    private bool LeaveCurrentPage()
+    {
+        if (CurrentPage == Settings && !Settings.TrySave())
+        {
+            IsPaneOpen = false;
+            return false;
+        }
+
+        ShowStage();
+        return true;
     }
 
     [RelayCommand]
@@ -144,14 +159,6 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         Settings.Load();
         CurrentPage = Settings;
-        IsPaneOpen = false;
-    }
-
-    [RelayCommand]
-    private void ShowPlaylistSelection()
-    {
-        PlaylistSelection.Load();
-        CurrentPage = PlaylistSelection;
         IsPaneOpen = false;
     }
 

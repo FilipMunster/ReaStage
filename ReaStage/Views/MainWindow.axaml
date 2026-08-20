@@ -58,8 +58,7 @@
                         Padding="12">
                     <StackPanel Margin="0,52,0,0" Spacing="4">
                         <Button Classes="menu" Content="Nastavení" Command="{Binding ShowSettingsCommand}"/>
-                        <Button Classes="menu" Content="Editor playlistů" Command="{Binding ShowPlaylistEditorCommand}"/>
-                        <Button Classes="menu" Content="Volba playlistu" Command="{Binding ShowPlaylistSelectionCommand}"/>
+                        <Button Classes="menu" Content="Playlisty" Command="{Binding ShowPlaylistEditorCommand}"/>
                     </StackPanel>
                 </Border>
             </SplitView.Pane>
@@ -71,9 +70,6 @@
                     </DataTemplate>
                     <DataTemplate DataType="vm:SettingsViewModel">
                         <views:SettingsView/>
-                    </DataTemplate>
-                    <DataTemplate DataType="vm:PlaylistSelectionViewModel">
-                        <views:PlaylistSelectionView/>
                     </DataTemplate>
                     <DataTemplate DataType="vm:PlaylistEditorViewModel">
                         <views:PlaylistEditorView/>

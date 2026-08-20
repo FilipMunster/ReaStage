@@ -44,6 +44,10 @@ public partial class PlaylistEditorViewModel : ViewModelBase
         public Guid? Id { get; }
         public bool IsReadOnly => Id is null;
 
+        // The active playlist is the one the stage view plays from
+        [ObservableProperty]
+        private bool isActive;
+
         // ObservableCollection so drag & drop can preview reordering live
         public ObservableCollection<SongItemViewModel> Songs { get; }
 
@@ -76,8 +80,8 @@ public partial class PlaylistEditorViewModel : ViewModelBase
     private readonly IPlaylistService playlistService;
     private readonly IRegionCatalog regionCatalog;
     private readonly Action<Action> dispatch;
+    private string? restorePoint;
 
-    public event EventHandler? Closed;
 
     [ObservableProperty]
     private IReadOnlyList<PlaylistColumnViewModel> columns = [];
@@ -108,8 +112,35 @@ public partial class PlaylistEditorViewModel : ViewModelBase
     // Called every time the editor page is shown
     public void Load()
     {
+        // Everything the service does is written straight to disk, so the state at
+        // opening time is kept aside for "Vrátit změny"
+        restorePoint = playlistService.CreateRestorePoint();
         Rebuild();
         _ = regionCatalog.RefreshAsync();
+    }
+
+    [RelayCommand]
+    private void SelectPlaylist(PlaylistColumnViewModel? column)
+    {
+        if (column is null || column.IsActive)
+        {
+            return;
+        }
+
+        playlistService.ActivePlaylistId = column.Id;
+        Rebuild();
+    }
+
+    [RelayCommand]
+    private void RevertChanges()
+    {
+        if (restorePoint is null)
+        {
+            return;
+        }
+
+        playlistService.Restore(restorePoint);
+        Rebuild();
     }
 
     // Live preview while dragging: moves the dragged song to targetIndex in the visual
@@ -197,12 +228,6 @@ public partial class PlaylistEditorViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void Back()
-    {
-        Closed?.Invoke(this, EventArgs.Empty);
-    }
-
-    [RelayCommand]
     private void CreatePlaylist()
     {
         string baseName = "Nový playlist";
@@ -287,6 +312,13 @@ public partial class PlaylistEditorViewModel : ViewModelBase
 
         List<PlaylistColumnViewModel> result = [BuildReaperColumn(regions)];
         result.AddRange(playlistService.Playlists.Select(p => BuildPlaylistColumn(p, regions)));
+
+        Guid? activeId = playlistService.ActivePlaylistId;
+        foreach (PlaylistColumnViewModel column in result)
+        {
+            column.IsActive = column.Id == activeId;
+        }
+
         Columns = result;
     }
 

@@ -17,7 +17,6 @@ public partial class SettingsViewModel : ViewModelBase
 
     private readonly ISettingsService settingsService;
 
-    public event EventHandler? Closed;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(PlayPauseKeyDisplay))]
@@ -161,8 +160,9 @@ public partial class SettingsViewModel : ViewModelBase
         ErrorMessage = string.Empty;
     }
 
-    [RelayCommand]
-    private void Save()
+    // Called when the page is left. Returns false when something is invalid; the page
+    // then stays open with ErrorMessage filled in.
+    public bool TrySave()
     {
         if (!TryParseGesture(PlayPauseKey, "Play/Pauza")
             || !TryParseGesture(PreviousKey, "Předchozí")
@@ -175,7 +175,7 @@ public partial class SettingsViewModel : ViewModelBase
             || !TryParseInt(ReaperOscPort, 1, 65535, "OSC port", out int oscPort)
             || !TryParseInt(WebPort, 1, 65535, "Port webu", out int webPort))
         {
-            return;
+            return false;
         }
 
         AppSettings settings = settingsService.Settings;
@@ -194,13 +194,14 @@ public partial class SettingsViewModel : ViewModelBase
 
         settingsService.Save();
         ErrorMessage = string.Empty;
-        Closed?.Invoke(this, EventArgs.Empty);
+        return true;
     }
 
+    // Throws away the edits by reading the stored settings again
     [RelayCommand]
-    private void Back()
+    private void RevertChanges()
     {
-        Closed?.Invoke(this, EventArgs.Empty);
+        Load();
     }
 
     private bool ValidateNoDuplicateKeys()

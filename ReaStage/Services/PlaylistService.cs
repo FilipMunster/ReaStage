@@ -55,6 +55,40 @@ internal class PlaylistService : IPlaylistService
         database = Load();
     }
 
+    public string CreateRestorePoint()
+    {
+        return JsonSerializer.Serialize(database, JsonOptions);
+    }
+
+    public void Restore(string restorePoint)
+    {
+        PlaylistDatabase? restored;
+        try
+        {
+            restored = JsonSerializer.Deserialize<PlaylistDatabase>(restorePoint, JsonOptions);
+        }
+        catch (JsonException ex)
+        {
+            logger.LogError(ex, "Restore point is not readable, playlists left untouched");
+            return;
+        }
+
+        if (restored is null)
+        {
+            logger.LogError("Restore point is empty, playlists left untouched");
+            return;
+        }
+
+        // Mutate in place: consumers hold on to this instance
+        database.Version = restored.Version;
+        database.ActivePlaylistId = restored.ActivePlaylistId;
+        database.Playlists.Clear();
+        database.Playlists.AddRange(restored.Playlists);
+
+        logger.LogInformation("Playlists restored to the state from when the editor was opened");
+        OnChanged();
+    }
+
     public Playlist? GetPlaylist(Guid id)
     {
         return database.Playlists.FirstOrDefault(p => p.Id == id);
