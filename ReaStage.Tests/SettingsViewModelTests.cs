@@ -106,4 +106,14 @@ public class SettingsViewModelTests
 
         Assert.Equal(string.Empty, viewModel.ErrorMessage);
     }
+
+    // Shown at the bottom of the settings page; the commit suffix is what tells a
+    // stale build from a fresh one, so it must survive the formatting
+    [Fact]
+    public void VersionText_IsVersionWithShortCommit()
+    {
+        SettingsViewModel viewModel = CreateLoadedViewModel();
+
+        Assert.Matches(@"^\d+\.\d+\.\d+ \([0-9a-f]{7}\)$", viewModel.VersionText);
+    }
 }

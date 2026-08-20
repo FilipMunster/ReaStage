@@ -5,6 +5,7 @@ using ReaStage.Core;
 using ReaStage.Services;
 using System;
 using System.Globalization;
+using System.Reflection;
 
 namespace ReaStage.ViewModels;
 
@@ -72,6 +73,9 @@ public partial class SettingsViewModel : ViewModelBase
     {
         this.settingsService = settingsService;
     }
+
+    // Build identity, so it is obvious which version is running on stage
+    public string VersionText { get; } = ReadVersion();
 
     public bool IsCapturing => CapturingField.Length > 0;
 
@@ -202,6 +206,31 @@ public partial class SettingsViewModel : ViewModelBase
     private void RevertChanges()
     {
         Load();
+    }
+
+    // The informational version carries the git commit after a '+', which is worth
+    // showing: it tells a stale build apart from a fresh one
+    private static string ReadVersion()
+    {
+        Assembly assembly = typeof(SettingsViewModel).Assembly;
+        string? informational = assembly
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+
+        if (string.IsNullOrWhiteSpace(informational))
+        {
+            return assembly.GetName().Version?.ToString() ?? "neznámá";
+        }
+
+        int plus = informational.IndexOf('+');
+        if (plus < 0)
+        {
+            return informational;
+        }
+
+        string version = informational[..plus];
+        string commit = informational[(plus + 1)..];
+
+        return commit.Length >= 7 ? $"{version} ({commit[..7]})" : version;
     }
 
     private bool ValidateNoDuplicateKeys()

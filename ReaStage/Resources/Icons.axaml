@@ -1,0 +1,23 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Hand-drawn icons, all laid out in a 24x24 box. Inter carries no glyphs for
+         these and a font fallback measured them wrong, so they are geometry.
+
+         Each icon's bounds have an exact aspect ratio and the consuming Path sets
+         Width/Height to match it, so Stretch="Uniform" fills the box completely and
+         the icon cannot end up off centre. -->
+
+    <!-- Filled. Bounds 20 x 16 (5:4) -->
+    <StreamGeometry x:Key="IconPrevious">M2,4 L4.5,4 L4.5,20 L2,20 Z M13,4 L13,20 L5.5,12 Z M22,4 L22,20 L14.5,12 Z</StreamGeometry>
+    <StreamGeometry x:Key="IconPlayPause">M2,4 L2,20 L12.5,12 Z M15,4 L17.5,4 L17.5,20 L15,20 Z M19.5,4 L22,4 L22,20 L19.5,20 Z</StreamGeometry>
+    <StreamGeometry x:Key="IconNext">M2,4 L2,20 L9.5,12 Z M10,4 L10,20 L17.5,12 Z M19.5,4 L22,4 L22,20 L19.5,20 Z</StreamGeometry>
+
+    <!-- Stroked. Bounds 16 x 12 (4:3) -->
+    <StreamGeometry x:Key="IconCheck">M4,12.5 L9.5,18 L20,6</StreamGeometry>
+
+    <!-- Stroked. Bounds 16 x 16 (1:1) -->
+    <StreamGeometry x:Key="IconDuplicate">M4,16 V4 H16 M8,8 H20 V20 H8 Z</StreamGeometry>
+    <StreamGeometry x:Key="IconDelete">M4,7 H20 M9.5,7 V4 H14.5 V7 M6.5,7 L7.5,20 H16.5 L17.5,7 M10.5,11 V16.5 M13.5,11 V16.5</StreamGeometry>
+
+</ResourceDictionary>

@@ -101,8 +101,8 @@
              fallback measured them wrong until a hover forced a re-layout -->
         <Style Selector="Path.transportIcon">
             <Setter Property="Fill" Value="{StaticResource TextPrimaryBrush}"/>
-            <Setter Property="Width" Value="26"/>
-            <Setter Property="Height" Value="18"/>
+            <Setter Property="Width" Value="25"/>
+            <Setter Property="Height" Value="20"/>
             <Setter Property="Stretch" Value="Uniform"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
@@ -262,13 +262,13 @@
                                FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=17}"/>
                     <TextBlock Text="{Binding RemainingPlaylistText}" Classes="statValue" Margin="0,0,14,0"
                                TextAlignment="Right"
-                               Width="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=112}"
+                               Width="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=132}"
                                FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=34}"/>
                     <TextBlock Text="konec" Classes="statLabel"
                                FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=17}"/>
                     <TextBlock Text="{Binding EndEstimateText}" Classes="statValue"
                                TextAlignment="Right"
-                               Width="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=84}"
+                               Width="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=100}"
                                FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=34}"/>
                 </StackPanel>
             </Grid>
@@ -278,16 +278,13 @@
             <StackPanel Orientation="Horizontal" Spacing="20"
                         HorizontalAlignment="Center" VerticalAlignment="Center">
                 <Button Classes="transport" Command="{Binding PreviousCommand}">
-                    <Path Classes="transportIcon"
-                          Data="M3,5 L5.5,5 L5.5,19 L3,19 Z M14,5 L14,19 L6.5,12 Z M22,5 L22,19 L14.5,12 Z"/>
+                    <Path Classes="transportIcon" Data="{StaticResource IconPrevious}"/>
                 </Button>
                 <Button Classes="transport" Command="{Binding PlayPauseCommand}">
-                    <Path Classes="transportIcon"
-                          Data="M3,5 L3,19 L13,12 Z M15.5,5 L18,5 L18,19 L15.5,19 Z M19.5,5 L22,5 L22,19 L19.5,19 Z"/>
+                    <Path Classes="transportIcon" Data="{StaticResource IconPlayPause}"/>
                 </Button>
                 <Button Classes="transport" Command="{Binding NextCommand}">
-                    <Path Classes="transportIcon"
-                          Data="M2,5 L2,19 L9.5,12 Z M10,5 L10,19 L17.5,12 Z M18.5,5 L21,5 L21,19 L18.5,19 Z"/>
+                    <Path Classes="transportIcon" Data="{StaticResource IconNext}"/>
                 </Button>
             </StackPanel>
         </Panel>

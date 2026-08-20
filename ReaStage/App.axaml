@@ -5,6 +5,11 @@
              RequestedThemeVariant="Dark">
 
     <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="/Resources/Icons.axaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
         <!-- Shared design palette -->
         <SolidColorBrush x:Key="SurfaceBrush" Color="#0DFFFFFF"/>
         <SolidColorBrush x:Key="SurfaceHoverBrush" Color="#1FFFFFFF"/>
@@ -16,6 +21,7 @@
         <SolidColorBrush x:Key="AccentDimBrush" Color="#804ADE80"/>
         <SolidColorBrush x:Key="DownbeatBrush" Color="#FBBF24"/>
         <SolidColorBrush x:Key="DangerBrush" Color="#FF6B6B"/>
+        </ResourceDictionary>
     </Application.Resources>
 
     <Application.DataTemplates>

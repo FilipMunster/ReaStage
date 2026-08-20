@@ -134,9 +134,8 @@
             <TextBlock Text="{Binding ErrorMessage}" Foreground="{StaticResource DangerBrush}" Margin="4,10,0,0"
                        IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
 
-            <!-- Changes are applied when the page is left; nothing to confirm here -->
-            <TextBlock Text="Změny se uloží při návratu na hlavní obrazovku (ikona vlevo nahoře nebo Esc)."
-                       Foreground="{StaticResource TextSecondaryBrush}" FontStyle="Italic"
+            <TextBlock Text="{Binding VersionText, StringFormat='ReaStage {0}'}"
+                       Foreground="{StaticResource TextSecondaryBrush}"
                        Margin="4,16,0,24"/>
         </StackPanel>
     </ScrollViewer>

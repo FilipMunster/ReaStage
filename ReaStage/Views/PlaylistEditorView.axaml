@@ -44,6 +44,32 @@
             <Setter Property="Stroke" Value="#0C0D13"/>
         </Style>
 
+        <!-- Square icon buttons; text labels made the name box too narrow -->
+        <Style Selector="Button.iconAction">
+            <Setter Property="Width" Value="30"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="CornerRadius" Value="9"/>
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource SurfaceBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Button.iconAction Path">
+            <Setter Property="Stroke" Value="#A6FFFFFF"/>
+            <Setter Property="StrokeThickness" Value="1.8"/>
+            <Setter Property="StrokeLineCap" Value="Round"/>
+            <Setter Property="StrokeJoin" Value="Round"/>
+            <Setter Property="Width" Value="16"/>
+            <Setter Property="Height" Value="16"/>
+            <Setter Property="Stretch" Value="Uniform"/>
+        </Style>
+        <Style Selector="Button.iconAction.danger:pointerover Path">
+            <Setter Property="Stroke" Value="{StaticResource DangerBrush}"/>
+        </Style>
+
         <Style Selector="Border.songItem">
             <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
             <Setter Property="BorderBrush" Value="{StaticResource SurfaceBorderBrush}"/>
@@ -117,9 +143,9 @@
                                             ToolTip.Tip="Nastavit jako aktivní"
                                             Command="{Binding #Root.((vm:PlaylistEditorViewModel)DataContext).SelectPlaylistCommand}"
                                             CommandParameter="{Binding}">
-                                        <Path Data="M3,8.5 L6.5,12 L13,4" Stretch="Uniform"
+                                        <Path Data="{StaticResource IconCheck}" Stretch="Uniform"
                                               StrokeThickness="2.2" StrokeLineCap="Round" StrokeJoin="Round"
-                                              Width="15" Height="15"/>
+                                              Width="16" Height="12"/>
                                     </Button>
                                     <TextBlock Grid.Column="1" Text="REAPER" FontSize="18" FontWeight="Bold"
                                                Foreground="{StaticResource AccentBrush}" VerticalAlignment="Center"
@@ -129,12 +155,16 @@
                                              FontSize="16" Margin="8,0,0,0" IsVisible="{Binding !IsReadOnly}"/>
                                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" Margin="8,0,0,0"
                                                 IsVisible="{Binding !IsReadOnly}">
-                                        <Button Classes="small" Content="Duplikovat"
+                                        <Button Classes="iconAction" ToolTip.Tip="Duplikovat"
                                                 Command="{Binding #Root.((vm:PlaylistEditorViewModel)DataContext).DuplicatePlaylistCommand}"
-                                                CommandParameter="{Binding}"/>
-                                        <Button Classes="small danger" Content="Smazat"
+                                                CommandParameter="{Binding}">
+                                            <Path Data="{StaticResource IconDuplicate}"/>
+                                        </Button>
+                                        <Button Classes="iconAction danger" ToolTip.Tip="Smazat playlist"
                                                 Command="{Binding #Root.((vm:PlaylistEditorViewModel)DataContext).RequestDeletePlaylistCommand}"
-                                                CommandParameter="{Binding}"/>
+                                                CommandParameter="{Binding}">
+                                            <Path Data="{StaticResource IconDelete}"/>
+                                        </Button>
                                     </StackPanel>
                                 </Grid>
 
@@ -205,7 +235,7 @@
             <TextBlock VerticalAlignment="Center" FontSize="18" Foreground="{StaticResource TextPrimaryBrush}">
                 <Run Text="Smazat playlist"/>
                 <Run Text="{Binding PendingDeleteColumn.Name, FallbackValue=''}" FontWeight="Bold"/>
-                <Run Text="? Tuto akci nelze vzít zpět."/>
+                <Run Text="?"/>
             </TextBlock>
             <Button Classes="danger" Content="Smazat" Command="{Binding ConfirmDeletePlaylistCommand}" FontSize="16" Padding="24,8"/>
             <Button Content="Zrušit" Command="{Binding CancelDeletePlaylistCommand}" FontSize="16" Padding="24,8"/>
