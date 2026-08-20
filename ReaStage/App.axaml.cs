@@ -39,6 +39,7 @@ public partial class App : Application
         {
             var windowFactory = serviceProvider.GetRequiredService<WindowFactory>();
             desktop.MainWindow = windowFactory.Create<MainWindow, MainWindowViewModel>();
+            //desktop.MainWindow.RendererDiagnostics.DebugOverlays = Avalonia.Rendering.RendererDebugOverlays.Fps | Avalonia.Rendering.RendererDebugOverlays.DirtyRects;
             desktop.MainWindow.Show();
 
             var webServer = serviceProvider.GetRequiredService<IWebControlServer>();

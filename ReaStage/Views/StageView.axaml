@@ -12,7 +12,6 @@
              Background="Transparent">
 
     <UserControl.Resources>
-        <conv:ProgressBrushConverter x:Key="ProgressBrush"/>
         <conv:FontScaleConverter x:Key="FontScale"/>
     </UserControl.Resources>
 
@@ -164,7 +163,22 @@
                     <!-- Progress is the border's own background, so the corner radius
                          clips it at every width -->
                     <Border CornerRadius="19"
-                            Background="{Binding Progress, Converter={StaticResource ProgressBrush}}"/>
+                            Background="Transparent"
+                            ClipToBounds="True">
+                        <Border HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                RenderTransformOrigin="0,0">
+                            <Border.RenderTransform>
+                                <ScaleTransform ScaleX="{Binding Progress}" ScaleY="1.0" />
+                            </Border.RenderTransform>
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                                    <GradientStop Offset="0" Color="#1A4ADE80" />
+                                    <GradientStop Offset="1" Color="#454ADE80" />
+                                </LinearGradientBrush>
+                            </Border.Background>
+                        </Border>
+                    </Border>
                     <TextBlock Text="{Binding CurrentSongName}"
                                FontSize="{Binding FontScale, Converter={StaticResource FontScale}, ConverterParameter=58}"
                                FontWeight="Bold" Foreground="#FFFFFF"

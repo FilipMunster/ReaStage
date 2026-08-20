@@ -12,6 +12,9 @@ namespace ReaStage.ViewModels;
 
 public partial class StageViewModel : ViewModelBase
 {
+    // Upper bound on how often the progress fill is repainted
+    private const long ProgressThrottleMs = 100;
+
     // How long an "armed" song stays armed before the second click must confirm
     private static readonly TimeSpan ArmTimeout = TimeSpan.FromSeconds(4);
 
@@ -25,6 +28,9 @@ public partial class StageViewModel : ViewModelBase
     private readonly DispatcherTimer armTimer;
     private readonly DispatcherTimer endEstimateTimer;
     private int? armedIndex;
+
+    private long lastProgressTicks;
+    private int throttledProgressIndex = -1;
 
     [ObservableProperty]
     private IReadOnlyList<StageSongItem> previousSongs = [];
@@ -185,7 +191,11 @@ public partial class StageViewModel : ViewModelBase
 
             HasCurrentSong = true;
             CurrentSongName = current.Name;
-            Progress = ComputeProgress(position.PositionSeconds, current);
+            if (ShouldRefreshProgress(index))
+            {
+                Progress = ComputeProgress(position.PositionSeconds, current);
+            }
+
             UpdateSongTimes(current, position);
 
             int previousCount = Math.Min(MaxSongsAround, index);
@@ -199,6 +209,8 @@ public partial class StageViewModel : ViewModelBase
             HasCurrentSong = false;
             CurrentSongName = "—";
             Progress = 0;
+            // Forget the throttled song, so coming back to it refreshes at once
+            throttledProgressIndex = index;
             ClearSongTimes();
             PreviousSongs = PreviousSongs.Count == 0 ? PreviousSongs : [];
             NextSongs = KeepOrBuild(NextSongs, items, 0, Math.Min(MaxSongsAround, items.Count));
@@ -312,6 +324,30 @@ public partial class StageViewModel : ViewModelBase
     private static string SongName(ResolvedPlaylistItem item)
     {
         return item.Region!.Value.Name;
+    }
+
+    // REAPER reports the position several times a second and repainting the progress
+    // fill that often costs real CPU, so it is refreshed at most every
+    // ProgressThrottleMs. A song change always refreshes, otherwise the new card would
+    // briefly keep showing the previous song's fill.
+    private bool ShouldRefreshProgress(int index)
+    {
+        long ticks = Environment.TickCount64;
+
+        if (index != throttledProgressIndex)
+        {
+            throttledProgressIndex = index;
+            lastProgressTicks = ticks;
+            return true;
+        }
+
+        if (ticks - lastProgressTicks < ProgressThrottleMs)
+        {
+            return false;
+        }
+
+        lastProgressTicks = ticks;
+        return true;
     }
 
     private static double ComputeProgress(double seconds, ReaperRegion region)

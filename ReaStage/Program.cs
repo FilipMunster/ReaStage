@@ -2,6 +2,7 @@
 using Avalonia;
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using Avalonia.Rendering;
 
 namespace ReaStage;
 
@@ -17,6 +18,14 @@ internal sealed class Program
     public static AppBuilder BuildAvaloniaApp()
         => AppBuilder.Configure<App>()
             .UsePlatformDetect()
+            .With(new Win32PlatformOptions
+            {
+                RenderingMode = [Win32RenderingMode.Software]
+            })
+            .With(new X11PlatformOptions
+            {
+                RenderingMode = [X11RenderingMode.Software]
+            })
 #if DEBUG
             .WithDeveloperTools()
 #endif
