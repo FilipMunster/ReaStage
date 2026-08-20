@@ -1,0 +1,6 @@
+# LF everywhere, in the repository and in every working tree
+* text=auto eol=lf
+
+# Never touch binary files
+*.png binary
+*.ico binary
