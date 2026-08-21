@@ -54,11 +54,14 @@ nenačte se playlist.
 Skript doinstaluje knihovny, které potřebuje Avalonia (X11, OpenGL, fonty) a .NET:
 
 ```bash
-sudo ./install-deps.sh
+sudo bash install-deps.sh
 ```
 
 Skript je psaný pro distribuce s `apt` (Debian, Ubuntu, Mint). Na jiných distribucích
 nainstaluj ekvivalentní balíčky ručně — jejich seznam je přímo ve skriptu.
+
+> Skripty se spouští přes `bash`, protože zip archiv neumí přenést příznak
+> spustitelnosti. Samotnou aplikaci nastaví spustitelnou instalační skript.
 
 ### 2. REAPER
 
@@ -78,7 +81,7 @@ Instalátor je součástí archivu od Cockos a vytvoří i položku v nabídce a
 Z rozbaleného balíčku ReaStage spusť:
 
 ```bash
-./install-ReaStage.sh
+bash install-ReaStage.sh
 ```
 
 Skript nainstaluje aplikaci do `~/.local/share/ReaStage`, vytvoří položku v nabídce
@@ -88,7 +91,7 @@ aplikací a symlink `~/.local/bin/reastage`, takže ji jde spustit i z terminál
 Odinstalace:
 
 ```bash
-./install-ReaStage.sh --uninstall
+bash install-ReaStage.sh --uninstall
 ```
 
 > Pokud `reastage` z terminálu nejde spustit, chybí ti `~/.local/bin` v `PATH`.
