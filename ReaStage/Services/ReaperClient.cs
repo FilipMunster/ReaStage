@@ -112,6 +112,7 @@ internal class ReaperClient : IReaperClient, IDisposable
         // Parsování TRANSPORT (indexy dle main.js: playstate(1), pos(2), repeat(3), pos_str(4), pos_str_beats(5))
         var playState = (ReaperPlayState)int.Parse(transportTokens[1]);
         var posSec = double.Parse(transportTokens[2], CultureInfo.InvariantCulture);
+        posSec = Math.Round(posSec, Constants.TIME_ROUND_PRECISION);
         var isRepeat = transportTokens[3] != "0";
         var posStr = Unescape(transportTokens[4]);
         var posStrBeats = Unescape(transportTokens[5]);
@@ -239,7 +240,7 @@ internal class ReaperClient : IReaperClient, IDisposable
             case "/time":
                 if (args.Length > 0 && args[0] is float sec)
                 {
-                    currentPosition = currentPosition with { PositionSeconds = sec };
+                    currentPosition = currentPosition with { PositionSeconds = Math.Round(sec, Constants.TIME_ROUND_PRECISION) };
                 }
                 break;
 
@@ -312,8 +313,9 @@ internal class ReaperClient : IReaperClient, IDisposable
             return position;
         }
 
-        // Measured precision does not justify finer steps than half a BPM
-        double bpm = Math.Round(60.0 * advanced / elapsed * 2, MidpointRounding.AwayFromZero) / 2;
+        // Whole BPM: that is all the display shows, and finer steps only made the
+        // shown value flip between neighbouring integers when the measurement wobbled
+        double bpm = Math.Round(60.0 * advanced / elapsed, MidpointRounding.AwayFromZero);
 
         return bpm is >= TempoMinBpm and <= TempoMaxBpm
             ? position with { TempoBpm = bpm }

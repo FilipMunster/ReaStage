@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ReaStage.Core;
+﻿namespace ReaStage.Core;
 
 internal static class Constants
 {

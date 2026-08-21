@@ -56,7 +56,7 @@ public static class StageStats
     public static string FormatBpm(double tempo)
     {
         return tempo > 0
-            ? $"{tempo.ToString("0.#", CultureInfo.InvariantCulture)} BPM"
+            ? $"{tempo.ToString("F0", CultureInfo.InvariantCulture)} BPM"
             : "— BPM";
     }
 

@@ -45,9 +45,12 @@ public class StageStatsTests
 
     [Theory]
     [InlineData(128, "128 BPM")]
-    [InlineData(120.5, "120.5 BPM")]
+    [InlineData(173.8, "174 BPM")]
+    // "F0" rounds halves to the nearest even number, so both of these land on 174
+    [InlineData(173.5, "174 BPM")]
+    [InlineData(174.5, "174 BPM")]
     [InlineData(0, "— BPM")]
-    public void FormatBpm_FormatsOrDashes(double tempo, string expected)
+    public void FormatBpm_IsWholeNumbersOrADash(double tempo, string expected)
     {
         Assert.Equal(expected, StageStats.FormatBpm(tempo));
     }
