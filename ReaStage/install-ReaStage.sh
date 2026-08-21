@@ -1,6 +1,15 @@
 #!/bin/bash
 set -e
 
+# Everything below installs under $HOME. Run as root that resolves to /root, so the
+# app and its menu entry land in root's home and never show up for the real user -
+# the install looks successful and the application menu stays empty.
+if [ "$EUID" -eq 0 ]; then
+    echo "Do not run this script as root: it installs into \$HOME, which would be /root." >&2
+    echo "Run it as your own user (only install-deps.sh needs sudo)." >&2
+    exit 1
+fi
+
 # Configuration
 APP_NAME="ReaStage"
 EXEC_NAME="ReaStage"

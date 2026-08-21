@@ -49,21 +49,27 @@ nenačte se playlist.
 
 ## Instalace na Linux
 
-### 1. Systémové závislosti
+### 1. Nastav skriptům příznak spustitelnosti
+
+Zip archiv neumí přenést příznak spustitelnosti, takže ho po rozbalení musíš nastavit
+ručně — jinak skripty nepůjde spustit:
+
+```bash
+chmod +x install-deps.sh install-ReaStage.sh
+```
+
+### 2. Systémové závislosti
 
 Skript doinstaluje knihovny, které potřebuje Avalonia (X11, OpenGL, fonty) a .NET:
 
 ```bash
-sudo bash install-deps.sh
+sudo ./install-deps.sh
 ```
 
 Skript je psaný pro distribuce s `apt` (Debian, Ubuntu, Mint). Na jiných distribucích
 nainstaluj ekvivalentní balíčky ručně — jejich seznam je přímo ve skriptu.
 
-> Skripty se spouští přes `bash`, protože zip archiv neumí přenést příznak
-> spustitelnosti. Samotnou aplikaci nastaví spustitelnou instalační skript.
-
-### 2. REAPER
+### 3. REAPER
 
 REAPER se na Linuxu neinstaluje z balíčkovacího systému, stáhni ho z
 [reaper.fm/download.php](https://www.reaper.fm/download.php) (položka *Linux x86_64*):
@@ -76,22 +82,27 @@ cd reaper_linux_x86_64
 
 Instalátor je součástí archivu od Cockos a vytvoří i položku v nabídce aplikací.
 
-### 3. ReaStage
+### 4. ReaStage
 
-Z rozbaleného balíčku ReaStage spusť:
+Z rozbaleného balíčku ReaStage spusť **bez `sudo`**:
 
 ```bash
-bash install-ReaStage.sh
+./install-ReaStage.sh
 ```
 
 Skript nainstaluje aplikaci do `~/.local/share/ReaStage`, vytvoří položku v nabídce
 aplikací a symlink `~/.local/bin/reastage`, takže ji jde spustit i z terminálu příkazem
 `reastage`.
 
+> **Nespouštěj ho pod `sudo` ani přes `bash`.** Instaluje se do `$HOME`, a pod `sudo`
+> je `$HOME` rovno `/root` — aplikace by skončila v domovském adresáři roota a
+> v nabídce aplikací by se vůbec neobjevila. Sudo potřebuje jen `install-deps.sh`,
+> který instaluje systémové balíčky.
+
 Odinstalace:
 
 ```bash
-bash install-ReaStage.sh --uninstall
+./install-ReaStage.sh --uninstall
 ```
 
 > Pokud `reastage` z terminálu nejde spustit, chybí ti `~/.local/bin` v `PATH`.
@@ -245,17 +256,18 @@ dotnet build ReaStage/ReaStage.csproj
 dotnet test ReaStage.Tests/ReaStage.Tests.csproj
 ```
 
-Publikace (self-contained, runtime je součástí balíčku):
+Balíčky pro obě platformy vyrobí skript v korytě repozitáře — publikuje a výsledek
+zabalí do `ReaStage_{verze}_{platforma}.zip`:
 
 ```bash
-dotnet publish ReaStage/ReaStage.csproj -c Release -r win-x64
-dotnet publish ReaStage/ReaStage.csproj -c Release -r linux-x64
+publish.bat
+publish.bat -Platform linux-x64
 ```
 
-Pro Linux je připravený profil `Properties/PublishProfiles/Linux.pubxml` (single-file).
-Do výstupní složky se vedle spustitelného souboru kopírují i `install-deps.sh`,
-`install-ReaStage.sh` a `ReaStage.ReaperOSC`, takže publikovaná složka je rovnou
-instalační balíček.
+Verzi bere z `<Version>` v `ReaStage.csproj`, nastavení self-contained a single-file
+z profilů v `Properties/PublishProfiles/`. Do linuxového balíčku se navíc kopírují
+`install-deps.sh`, `install-ReaStage.sh` a ikona, takže rozbalená složka je rovnou
+instalační balíček; ve Windows balíčku tyto soubory nejsou.
 
 Trimming je vypnutý záměrně — Avalonia i webový server stojí na reflexi.
 
@@ -284,3 +296,11 @@ okamžitou aktualizaci.
 
 **Změnil jsem porty a nic se nestalo**
 Host a porty se čtou při startu — restartuj aplikaci.
+
+**Na Linuxu instalace proběhla, ale ReaStage není v nabídce aplikací**
+`install-ReaStage.sh` byl spuštěný pod `sudo`, takže se nainstaloval do
+`/root/.local/share/ReaStage`. Ukliď to a spusť ho znovu bez `sudo`:
+
+```bash
+sudo rm -rf /root/.local/share/ReaStage /root/.local/share/applications/reastage.desktop
+```

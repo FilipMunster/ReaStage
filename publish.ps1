@@ -60,8 +60,8 @@ function Get-ProjectVersion
 
 # A zip written on Windows records "made by FAT", so Unix permission bits in the
 # entries are ignored by unzip - setting them only clobbered the DOS attributes and
-# made things worse. The Linux install steps therefore invoke the scripts through
-# bash (no execute bit needed) and install-ReaStage.sh chmods the app itself.
+# made things worse. The readme therefore has the user chmod the scripts after
+# unpacking; install-ReaStage.sh chmods the app itself.
 function New-Package
 {
     param(
@@ -76,7 +76,7 @@ function New-Package
     }
 
     # Built entry by entry rather than with CreateFromDirectory, so every file sits
-    # under one folder in the archive and can carry a Unix mode
+    # under one folder in the archive rather than loose in the extraction directory
     $archive = [System.IO.Compression.ZipFile]::Open($ZipPath, 'Create')
     try
     {
